@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 public class controller : MonoBehaviour
@@ -13,14 +14,17 @@ public class controller : MonoBehaviour
 
     bool hasContact = false;
     bool directionHasChanged = false;
+    bool firstContact = false;
 
     public GameObject player;
     public Camera mainCamera;
 
+    Vector3 offset = new Vector3(0, 0, 0);
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        ;
     }
 
     // Update is called once per frame
@@ -30,6 +34,7 @@ public class controller : MonoBehaviour
             var transform = player.GetComponent<Transform>();
 
             var screenSpacePosition = mainCamera.WorldToScreenPoint(transform.position);
+            var cameraTransform = mainCamera.GetComponent<Transform>();
 
             var newDirection = Input.mousePosition - screenSpacePosition;
 
@@ -53,18 +58,44 @@ public class controller : MonoBehaviour
 
             if (directionHasChanged) {
                 if (newDirection.x < 0f) {
-                    transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(0f, 180f, 0f), .25f);
+                    transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
                 }
 
                 else {
-                    transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(0f, 0f, 0f), .25f);
+                    transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
                 }
             }
+        }
+
+        if (firstContact)
+        {
+            var transform = player.GetComponent<Transform>();
+            var cameraTransform = mainCamera.GetComponent<Transform>();
+
+            var newPostion = transform.position - offset;
+            newPostion.Set(newPostion.x, Mathf.Clamp(cameraTransform.position.y, 0f, .4f), newPostion.z);
+
+            cameraTransform.position = Vector3.Lerp(cameraTransform.position, newPostion, .04f);
+        }
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown("r")) {
+            SceneManager.LoadScene("demo", LoadSceneMode.Single);
         }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!firstContact)
+        {
+            var transform = player.GetComponent<Transform>();
+            var cameraTransform = mainCamera.GetComponent<Transform>();
+
+            offset = transform.position - cameraTransform.position;
+            firstContact = true;
+        }
         /*if (collision.gameObject.tag == "Enemy") {
             collision.gameObject.SendMessage("ApplyDamage", 10);
         }*/
