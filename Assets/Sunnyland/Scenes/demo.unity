@@ -3249,8 +3249,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   jumpForce: 24
+  jumpThreshold: 10
   speed: 1
   player: {fileID: 1055798211}
+  mainCamera: {fileID: 1725613775}
 --- !u!1 &1069749210
 GameObject:
   m_ObjectHideFlags: 0

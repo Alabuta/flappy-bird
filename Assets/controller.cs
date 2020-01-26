@@ -6,12 +6,16 @@ using UnityEngine;
 public class controller : MonoBehaviour
 {
     public float jumpForce = 1f;
-    public float speed = 10.1f;
-    Vector3 direction = new Vector3(0f, 0f, 0f);
+    public float jumpThreshold = 10f; // in pixels
+    public float speed = 10f;
+
+    Vector3 prevDirection = new Vector3(0f, 0f, 0f);
 
     bool hasContact = false;
+    bool directionHasChanged = false;
 
     public GameObject player;
+    public Camera mainCamera;
 
     // Start is called before the first frame update
     void Start()
@@ -23,23 +27,39 @@ public class controller : MonoBehaviour
     void FixedUpdate()
     {
         if (Input.GetButton("Fire1")) {
-            var screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            var transform = player.GetComponent<Transform>();
 
-            if (hasContact && Input.mousePosition.y > screenCenter.y) {
+            var screenSpacePosition = mainCamera.WorldToScreenPoint(transform.position);
+
+            var newDirection = Input.mousePosition - screenSpacePosition;
+
+            if (hasContact && newDirection.y > jumpThreshold) {
                 var rigidbody = player.GetComponent<Rigidbody2D>();
                 rigidbody.AddForce(new Vector3(0f, jumpForce, 0f));
 
                 hasContact = false;
             }
 
-            direction.x = Input.mousePosition.x > screenCenter.x ? 1f : -1f;
+            newDirection.y = 0f;
+            newDirection = Vector3.Normalize(newDirection);
 
-            var transform = player.GetComponent<Transform>();
+            directionHasChanged = Vector3.Distance(prevDirection, newDirection) > 0f;
 
-            transform.position += direction * speed * Time.fixedDeltaTime;
+            prevDirection = newDirection;
 
-            //transform.localRotation.y = direction.x >= 0f ? 0f : Mathf.PI;
-            transform.localRotation = direction.x >= 0f ? Quaternion.Euler(0f, 0f, 0f) : Quaternion.Euler(0f, 180, 0f);
+            transform.position += newDirection * speed * Time.fixedDeltaTime;
+
+            //transform.localRotation = direction.x >= 0f ? Quaternion.Euler(0f, 0f, 0f) : Quaternion.Euler(0f, 180, 0f);
+
+            if (directionHasChanged) {
+                if (newDirection.x < 0f) {
+                    transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(0f, 180f, 0f), .25f);
+                }
+
+                else {
+                    transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(0f, 0f, 0f), .25f);
+                }
+            }
         }
     }
 
@@ -49,7 +69,6 @@ public class controller : MonoBehaviour
             collision.gameObject.SendMessage("ApplyDamage", 10);
         }*/
         //Debug.Log(collision.contacts);
-        Debug.Log(4444);
         hasContact = true;
     }
 }
