@@ -54,8 +54,6 @@ public class controller : MonoBehaviour
 
             transform.position += newDirection * speed * Time.fixedDeltaTime;
 
-            //transform.localRotation = direction.x >= 0f ? Quaternion.Euler(0f, 0f, 0f) : Quaternion.Euler(0f, 180, 0f);
-
             if (directionHasChanged) {
                 if (newDirection.x < 0f) {
                     transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
