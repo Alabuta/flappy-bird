@@ -5,7 +5,10 @@ using UnityEngine;
 public class uvAnimation : MonoBehaviour
 {
     public Vector2 step = new Vector2(.5f, 0f);
+
     Vector2 uvRange;
+    Vector4 spriteCorners;
+
     Material material;
 
     float timer = 0f;
@@ -27,9 +30,7 @@ public class uvAnimation : MonoBehaviour
 
         uvRange = max - min;
 
-        Debug.Log(min);
-        Debug.Log(max);
-        Debug.Log(uvRange);
+        spriteCorners = new Vector4(min.x, min.y, max.x, max.y);
     }
 
     void Update()
@@ -39,8 +40,7 @@ public class uvAnimation : MonoBehaviour
         var offset = step * timer;
         var clampedOffset = offset - new Vector2(Mathf.Floor(offset.x), Mathf.Floor(offset.y));
 
-        Vector4 uniformValue = clampedOffset * uvRange;
-
-        material.SetVector("_UVScroll", uniformValue);
+        material.SetVector("_UVScroll", clampedOffset * uvRange);
+        material.SetVector("_SpriteCorners", spriteCorners);
     }
 }

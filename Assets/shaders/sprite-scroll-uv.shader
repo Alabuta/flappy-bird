@@ -6,7 +6,8 @@ Shader "Custom/SpriteScrollUV"
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
-        _UVScroll("UVs Scroll Value", Vector) = (0, 0, 0, 0)
+        _UVScroll("UVs scroll value", Vector) = (0, 0, 0, 0)
+        [HideInInspector] _SpriteCorners("Sprite UV corners", Vector) = (0, 0, 0, 0)
         [MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
         [HideInInspector] _RendererColor ("RendererColor", Color) = (1,1,1,1)
         [HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
@@ -33,40 +34,32 @@ Shader "Custom/SpriteScrollUV"
         Pass
         {
         CGPROGRAM
-            #pragma fragment SpriteFrag
             #pragma target 2.0
             #pragma multi_compile_instancing
             #pragma multi_compile_local _ PIXELSNAP_ON
             #pragma multi_compile _ ETC1_EXTERNAL_ALPHA
             #include "UnitySprites.cginc"
 
-
             float4 _UVScroll;
+            float4 _SpriteCorners;
 
-            v2f vert(appdata_t IN)
+            fixed4 frag(v2f IN) : SV_Target
             {
-                v2f OUT;
+                float2 texcoord = IN.texcoord;
 
-                UNITY_SETUP_INSTANCE_ID (IN);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+                texcoord += _UVScroll.xy;
 
-                OUT.vertex = UnityFlipSprite(IN.vertex, _Flip);
-                OUT.vertex = UnityObjectToClipPos(OUT.vertex);
+                if (texcoord.x > _SpriteCorners.z)
+                    texcoord.x = _SpriteCorners.x + texcoord.x - _SpriteCorners.z;
 
-                OUT.texcoord = IN.texcoord + _UVScroll.xy;
+                fixed4 c = SampleSpriteTexture(texcoord) * IN.color;
+                c.rgb *= c.a;
 
-                //OUT.texcoord.x = OUT.texcoord.x > _SpriteUVCorners.z ? _SpriteUVCorners.x : OUT.texcoord.x;
-
-                OUT.color = IN.color * _Color * _RendererColor;
-
-                #ifdef PIXELSNAP_ON
-                OUT.vertex = UnityPixelSnap (OUT.vertex);
-                #endif
-
-                return OUT;
+                return c;
             }
 
-            #pragma vertex vert
+            #pragma vertex SpriteVert
+            #pragma fragment frag
         ENDCG
         }
     }
