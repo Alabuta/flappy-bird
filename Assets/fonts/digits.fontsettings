@@ -32,7 +32,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   - serializedVersion: 2
     index: 1
@@ -48,7 +48,7 @@ Font:
       y: 0
       width: 8
       height: -18
-    advance: 8
+    advance: 5
     flipped: 0
   - serializedVersion: 2
     index: 2
@@ -64,7 +64,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   - serializedVersion: 2
     index: 3
@@ -80,7 +80,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   - serializedVersion: 2
     index: 4
@@ -96,7 +96,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   - serializedVersion: 2
     index: 5
@@ -112,7 +112,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   - serializedVersion: 2
     index: 6
@@ -128,7 +128,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   - serializedVersion: 2
     index: 7
@@ -144,7 +144,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   - serializedVersion: 2
     index: 8
@@ -160,7 +160,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   - serializedVersion: 2
     index: 9
@@ -176,7 +176,7 @@ Font:
       y: 0
       width: 12
       height: -18
-    advance: 12
+    advance: 8
     flipped: 0
   m_KerningValues: []
   m_PixelScale: 0.1
