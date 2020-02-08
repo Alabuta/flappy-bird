@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class uvAnimation : MonoBehaviour
-{
-    public Vector2 step = new Vector2(.5f, 0f);
+public class UVScroller : MonoBehaviour {
+    public Vector2 step = new Vector2(0f, 0f);
 
-    Vector2 uvRange;
-    Vector4 spriteCorners;
+    private Vector2 uvRange;
+    private Vector4 spriteCorners;
 
-    Material material;
+    private Material material;
 
-    float timer = 0f;
+    private float timer = 0f;
 
     void Start()
     {
