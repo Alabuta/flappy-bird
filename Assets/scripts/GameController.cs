@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Manager : MonoBehaviour {
+public class GameController : MonoBehaviour {
     public GameObject player;
+
+    private Animator playerAnimator;
 
     private int playerScore = 0;
 
@@ -24,6 +26,8 @@ public class Manager : MonoBehaviour {
         state = GameState.IDLE;
 
         updateOnState = updateOnIdleState;
+
+        playerAnimator = player.GetComponent<Animator>();
     }
 
     void Update()
@@ -36,12 +40,17 @@ public class Manager : MonoBehaviour {
         if (Input.GetButton("Fire1")) {
             state = GameState.PLAY;
             updateOnState = updateOnPlayState;
+
+            playerAnimator.SetTrigger("GameHasStarted");
         }
     }
     void updateOnPlayState()
     {
+        //playerAnimator.ResetTrigger("GameHasStarted");
+
         if (Input.GetButton("Fire1")) {
-            Debug.Log(4444);
+            var rigidbody = player.GetComponent<Rigidbody2D>();
+            rigidbody.AddForce(new Vector3(0f, 10f, 0f));
         }
     }
 }
