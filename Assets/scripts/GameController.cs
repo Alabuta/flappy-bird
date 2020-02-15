@@ -37,7 +37,7 @@ public class GameController : MonoBehaviour {
         idleStateCanvasAnimator = idleStateCanvas.GetComponent<Animator>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         updateOnState();
     }
@@ -48,7 +48,7 @@ public class GameController : MonoBehaviour {
             state = GameState.PLAY;
             updateOnState = updateOnPlayState;
 
-            playerAnimator.SetTrigger("GameHasStarted");
+            //playerAnimator.SetTrigger("GameHasStarted");
             idleStateCanvasAnimator.SetTrigger("GameHasStarted");
         }
     }
@@ -58,7 +58,7 @@ public class GameController : MonoBehaviour {
 
         if (Input.GetButton("Fire1")) {
             var rigidbody = player.GetComponent<Rigidbody2D>();
-            rigidbody.AddForce(new Vector3(0f, 10f, 0f));
+            rigidbody.AddForce(new Vector3(0f, 100f, 0f));
         }
 
         var frameTransform = frame.GetComponent<Transform>();
