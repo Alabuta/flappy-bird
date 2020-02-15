@@ -4,8 +4,14 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour {
     public GameObject player;
+    public GameObject frame;
+
+    public Canvas idleStateCanvas;
 
     private Animator playerAnimator;
+    private Animator idleStateCanvasAnimator;
+
+    public float speed = 8;
 
     private int playerScore = 0;
 
@@ -28,6 +34,7 @@ public class GameController : MonoBehaviour {
         updateOnState = updateOnIdleState;
 
         playerAnimator = player.GetComponent<Animator>();
+        idleStateCanvasAnimator = idleStateCanvas.GetComponent<Animator>();
     }
 
     void Update()
@@ -42,6 +49,7 @@ public class GameController : MonoBehaviour {
             updateOnState = updateOnPlayState;
 
             playerAnimator.SetTrigger("GameHasStarted");
+            idleStateCanvasAnimator.SetTrigger("GameHasStarted");
         }
     }
     void updateOnPlayState()
@@ -52,5 +60,8 @@ public class GameController : MonoBehaviour {
             var rigidbody = player.GetComponent<Rigidbody2D>();
             rigidbody.AddForce(new Vector3(0f, 10f, 0f));
         }
+
+        var frameTransform = frame.GetComponent<Transform>();
+        frameTransform.position += new Vector3(speed, 0, 0) * Time.deltaTime;
     }
 }
