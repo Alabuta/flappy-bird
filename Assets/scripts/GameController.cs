@@ -6,10 +6,17 @@ public class GameController : MonoBehaviour {
     public GameObject player;
     public GameObject frame;
 
+    public GameObject prefabPipes;
+    public float pipesOffset = 1f;
+
+    public Vector3 pipesStartPoint = new Vector3(0, 0, 0);
+
     public Canvas idleStateCanvas;
 
     private Animator playerAnimator;
     private Animator idleStateCanvasAnimator;
+
+    private Queue<GameObject> pipes;
 
     public float speed = 8;
 
@@ -35,9 +42,14 @@ public class GameController : MonoBehaviour {
 
         playerAnimator = player.GetComponent<Animator>();
         idleStateCanvasAnimator = idleStateCanvas.GetComponent<Animator>();
+
+        pipes = new Queue<GameObject>();
+
+        for (var i = 0; i < 5; ++i)
+            pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + new Vector3(pipesOffset * i, 0, 0), Quaternion.identity));
     }
 
-    void FixedUpdate()
+    void Update()
     {
         updateOnState();
     }
