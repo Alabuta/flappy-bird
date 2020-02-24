@@ -553,15 +553,15 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 10
+  m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 10
   m_Material: {fileID: 0}
   m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!70 &695781964
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -942,7 +942,10 @@ MonoBehaviour:
   pipesOffset: 8
   pipesStartPoint: {x: 15, y: 0, z: 5}
   idleStateCanvas: {fileID: 562651186}
-  speed: 8
+  jumpVelocity: 20
+  movementVelocity: 8
+  fallMultiplier: 2.7
+  lowJumpMultiplier: 1.6
 --- !u!4 &1221399300 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5303355669785752425, guid: aad28cb5f552a704abb9b6a5c1f722ea,

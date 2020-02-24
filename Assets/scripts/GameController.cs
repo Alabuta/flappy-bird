@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour {
     public GameObject player;
@@ -18,7 +19,11 @@ public class GameController : MonoBehaviour {
 
     private Queue<GameObject> pipes;
 
-    public float speed = 8;
+    public float jumpVelocity = 1f;
+    public float movementVelocity = 8f;
+
+    public float fallMultiplier = 2.4f;
+    public float lowJumpMultiplier = 2f;
 
     private int playerScore = 0;
 
@@ -46,7 +51,7 @@ public class GameController : MonoBehaviour {
         pipes = new Queue<GameObject>();
 
         for (var i = 0; i < 5; ++i)
-            pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + new Vector3(pipesOffset * i, 0, 0), Quaternion.identity));
+            pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + Vector3.right * pipesOffset * i, Quaternion.identity));
     }
 
     void Update()
@@ -56,7 +61,7 @@ public class GameController : MonoBehaviour {
 
     void updateOnIdleState()
     {
-        if (Input.GetButton("Fire1")) {
+        if (Input.GetButtonDown("Fire1")) {
             state = GameState.PLAY;
             updateOnState = updateOnPlayState;
 
@@ -68,12 +73,27 @@ public class GameController : MonoBehaviour {
     {
         //playerAnimator.ResetTrigger("GameHasStarted");
 
-        if (Input.GetButton("Fire1")) {
-            var rigidbody = player.GetComponent<Rigidbody2D>();
-            rigidbody.AddForce(new Vector3(0f, 100f, 0f));
+        var rigidbody = player.GetComponent<Rigidbody2D>();
+
+        var multiplier = 1f;
+
+        if (rigidbody.velocity.y < 0)
+            multiplier = fallMultiplier;
+
+        else if (rigidbody.velocity.y > 0 && !Input.GetButton("Fire1"))
+            multiplier = lowJumpMultiplier;
+
+        rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (multiplier - 1) * Time.deltaTime;
+
+        if (Input.GetButtonDown("Fire1")) {
+            //rigidbody.AddForce(Vector3.up * 100f);
+            rigidbody.velocity = Vector3.up * jumpVelocity;
         }
 
         var frameTransform = frame.GetComponent<Transform>();
-        frameTransform.position += new Vector3(speed, 0, 0) * Time.deltaTime;
+        frameTransform.position += Vector3.right * movementVelocity * Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.R))
+            SceneManager.LoadScene("main", LoadSceneMode.Single);
     }
 }
