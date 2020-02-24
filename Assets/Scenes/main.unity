@@ -942,8 +942,8 @@ MonoBehaviour:
   pipesOffset: 8
   pipesStartPoint: {x: 15, y: 0, z: 5}
   idleStateCanvas: {fileID: 562651186}
-  jumpVelocity: 20
-  movementVelocity: 8
+  jumpVelocity: 27
+  movementVelocity: 0
   fallMultiplier: 2.7
   lowJumpMultiplier: 1.6
 --- !u!4 &1221399300 stripped
