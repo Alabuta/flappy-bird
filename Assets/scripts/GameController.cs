@@ -80,14 +80,19 @@ public class GameController : MonoBehaviour {
         if (rigidbody.velocity.y < 0)
             multiplier = fallMultiplier;
 
-        else if (rigidbody.velocity.y > 0 && !Input.GetButton("Fire1"))
-            multiplier = lowJumpMultiplier;
+        //else if (rigidbody.velocity.y > 0 && !Input.GetButton("Fire1"))
+        //    multiplier = lowJumpMultiplier;
 
         rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (multiplier - 1) * Time.deltaTime;
 
         if (Input.GetButtonDown("Fire1")) {
             //rigidbody.AddForce(Vector3.up * 100f);
             rigidbody.velocity = Vector3.up * jumpVelocity;
+            playerAnimator.SetTrigger("WingsHaveFlapped");
+        }
+
+        else {
+            playerAnimator.ResetTrigger("WingsHaveFlapped");
         }
 
         var frameTransform = frame.GetComponent<Transform>();
