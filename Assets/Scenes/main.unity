@@ -707,7 +707,7 @@ GameObject:
   - component: {fileID: 868233064}
   - component: {fileID: 868233067}
   m_Layer: 8
-  m_Name: ground
+  m_Name: platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -760,17 +760,17 @@ BoxCollider2D:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_UsedByComposite: 1
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 21, y: 7}
-    newSize: {x: 21, y: 7}
+    newSize: {x: 20, y: 7}
     adaptiveTilingThreshold: 0.5
-    drawMode: 0
+    drawMode: 2
     adaptiveTiling: 0
-  m_AutoTiling: 0
+  m_AutoTiling: 1
   serializedVersion: 2
   m_Size: {x: 21, y: 7}
   m_EdgeRadius: 0
@@ -818,8 +818,8 @@ SpriteRenderer:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 21, y: 7}
+  m_DrawMode: 2
+  m_Size: {x: 20, y: 7}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -837,7 +837,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 889784cd07a35664f989b4936865727a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  step: {x: 0.4, y: 0}
+  step: {x: 0.38, y: 0}
 --- !u!1 &1092650309
 GameObject:
   m_ObjectHideFlags: 0
