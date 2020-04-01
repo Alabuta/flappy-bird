@@ -51,7 +51,7 @@ public class GameController : MonoBehaviour {
         pipes = new Queue<GameObject>();
 
         for (var i = 0; i < 5; ++i)
-            pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + Vector3.right * pipesOffset * i, Quaternion.identity, frame.transform));
+            pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + Vector3.right * pipesOffset * i, Quaternion.identity));
     }
 
     void Update()
@@ -98,10 +98,10 @@ public class GameController : MonoBehaviour {
         var frameTransform = frame.GetComponent<Transform>();
         frameTransform.position += Vector3.right * movementVelocity * Time.deltaTime;
 
-        foreach (var pipe in pipes) {
-            var tr = pipe.GetComponent<Transform>();
-            tr.position += Vector3.left * 8f * Time.deltaTime;
-        }
+        //foreach (var pipe in pipes) {
+        //    var tr = pipe.GetComponent<Transform>();
+        //    tr.position += Vector3.left * 8f * Time.deltaTime;
+        //}
 
         if (Input.GetKeyDown(KeyCode.R))
             SceneManager.LoadScene("main", LoadSceneMode.Single);
