@@ -27,6 +27,8 @@ public class GameController : MonoBehaviour {
 
     private int playerScore = 0;
 
+    private float rollAngle = 0f;
+
     private enum GameState {
         IDLE,
         PLAY,
@@ -38,6 +40,11 @@ public class GameController : MonoBehaviour {
 
     private delegate void DelegateUpdateOnState();
     DelegateUpdateOnState updateOnState;
+
+    private delegate void FireButtonHandler();
+    private event FireButtonHandler FireJustPressed;
+    private event FireButtonHandler FireIsHeld;
+    private event FireButtonHandler FireJustUnPressed;
 
     void Start()
     {
@@ -52,10 +59,34 @@ public class GameController : MonoBehaviour {
 
         for (var i = 0; i < 5; ++i)
             pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + Vector3.right * pipesOffset * i, Quaternion.identity));
+
+        FireJustPressed += () => {
+            Debug.Log(8888);
+        };
+
+        FireIsHeld += () => {
+            Debug.Log(4444);
+        };
+
+        FireJustUnPressed += () => {
+            Debug.Log(2222);
+        };
     }
 
     void Update()
     {
+        if (Input.GetButtonDown("Fire1")) {
+            FireJustPressed();
+        }
+
+        else if (Input.GetButton("Fire1")) {
+            FireIsHeld();
+        }
+
+        else if (Input.GetButtonUp("Fire1")) {
+            FireJustUnPressed();
+        }
+
         updateOnState();
     }
 
@@ -105,5 +136,10 @@ public class GameController : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.R))
             SceneManager.LoadScene("main", LoadSceneMode.Single);
+    }
+
+    void FixedUpdate()
+    {
+        player.transform.Rotate(Vector3.forward * rollAngle);
     }
 }
