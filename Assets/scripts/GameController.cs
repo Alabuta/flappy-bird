@@ -1,7 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
+//using GameState.IGameState;
+
 
 public class GameController : MonoBehaviour {
     public GameObject player;
@@ -14,8 +18,8 @@ public class GameController : MonoBehaviour {
 
     public Canvas idleStateCanvas;
 
-    private Animator playerAnimator;
-    private Animator idleStateCanvasAnimator;
+    public Animator playerAnimator { get; private set; }
+    public Animator idleStateCanvasAnimator { get; private set; }
 
     private Queue<GameObject> pipes;
 
@@ -29,14 +33,16 @@ public class GameController : MonoBehaviour {
 
     private float rollAngle = 0f;
 
-    private enum GameState {
+    private GameState gameState = null;
+
+    private enum eGameState {
         IDLE,
         PLAY,
         FAIL,
         SCORE
     }
 
-    private GameState state;
+    private eGameState state;
 
     private delegate void DelegateUpdateOnState();
     DelegateUpdateOnState updateOnState;
@@ -48,7 +54,9 @@ public class GameController : MonoBehaviour {
 
     void Start()
     {
-        state = GameState.IDLE;
+        UpdateGameState();
+
+        state = eGameState.IDLE;
 
         updateOnState = updateOnIdleState;
 
@@ -59,18 +67,6 @@ public class GameController : MonoBehaviour {
 
         for (var i = 0; i < 5; ++i)
             pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + Vector3.right * pipesOffset * i, Quaternion.identity));
-
-        FireJustPressed += () => {
-            Debug.Log(8888);
-        };
-
-        FireIsHeld += () => {
-            Debug.Log(4444);
-        };
-
-        FireJustUnPressed += () => {
-            Debug.Log(2222);
-        };
     }
 
     void Update()
@@ -87,13 +83,13 @@ public class GameController : MonoBehaviour {
             FireJustUnPressed();
         }
 
-        updateOnState();
+        gameState.Update();
     }
 
     void updateOnIdleState()
     {
         if (Input.GetButtonDown("Fire1")) {
-            state = GameState.PLAY;
+            state = eGameState.PLAY;
             updateOnState = updateOnPlayState;
 
             playerAnimator.SetTrigger("GameHasStarted");
@@ -141,5 +137,20 @@ public class GameController : MonoBehaviour {
     void FixedUpdate()
     {
         player.transform.Rotate(Vector3.forward * rollAngle);
+    }
+
+    void UpdateGameState()
+    {
+        if (gameState is null) {
+            gameState = new GameStateIdle();
+        }
+
+        else if (gameState is GameStateIdle) {
+            gameState = new GameStatePlay();
+        }
+
+        FireJustPressed += gameState.OnFireButtonPressed;
+        FireIsHeld += gameState.OnFireButtonHeld;
+        FireJustUnPressed += gameState.OnFireButtonUnpressed;
     }
 }
