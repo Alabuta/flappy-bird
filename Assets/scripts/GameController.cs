@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-//using GameState.IGameState;
-
 
 public class GameController : MonoBehaviour {
     public GameObject player;
@@ -21,31 +19,13 @@ public class GameController : MonoBehaviour {
     public Animator playerAnimator { get; private set; }
     public Animator idleStateCanvasAnimator { get; private set; }
 
+    public PlayerParams playerParams;// { get; private set; }
+
     private Queue<GameObject> pipes;
-
-    public float jumpVelocity = 1f;
-    public float movementVelocity = 8f;
-
-    public float fallMultiplier = 2.4f;
-    public float lowJumpMultiplier = 2f;
 
     private int playerScore = 0;
 
-    private float rollAngle = 0f;
-
     private GameState gameState = null;
-
-    private enum eGameState {
-        IDLE,
-        PLAY,
-        FAIL,
-        SCORE
-    }
-
-    private eGameState state;
-
-    private delegate void DelegateUpdateOnState();
-    DelegateUpdateOnState updateOnState;
 
     private delegate void FireButtonHandler();
     private event FireButtonHandler FireJustPressed;
@@ -54,12 +34,6 @@ public class GameController : MonoBehaviour {
 
     void Start()
     {
-        UpdateGameState();
-
-        state = eGameState.IDLE;
-
-        updateOnState = updateOnIdleState;
-
         playerAnimator = player.GetComponent<Animator>();
         idleStateCanvasAnimator = idleStateCanvas.GetComponent<Animator>();
 
@@ -67,10 +41,15 @@ public class GameController : MonoBehaviour {
 
         for (var i = 0; i < 5; ++i)
             pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + Vector3.right * pipesOffset * i, Quaternion.identity));
+
+        UpdateGameState();
     }
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.R))
+            SceneManager.LoadScene("main", LoadSceneMode.Single);
+
         if (Input.GetButtonDown("Fire1")) {
             FireJustPressed();
         }
@@ -86,67 +65,19 @@ public class GameController : MonoBehaviour {
         gameState.Update();
     }
 
-    void updateOnIdleState()
-    {
-        if (Input.GetButtonDown("Fire1")) {
-            state = eGameState.PLAY;
-            updateOnState = updateOnPlayState;
-
-            playerAnimator.SetTrigger("GameHasStarted");
-            idleStateCanvasAnimator.SetTrigger("GameHasStarted");
-        }
-    }
-    void updateOnPlayState()
-    {
-        playerAnimator.ResetTrigger("GameHasStarted");
-
-        var rigidbody = player.GetComponent<Rigidbody2D>();
-
-        var multiplier = 1f;
-
-        if (rigidbody.velocity.y < 0)
-            multiplier = fallMultiplier;
-
-        //else if (rigidbody.velocity.y > 0 && !Input.GetButton("Fire1"))
-        //    multiplier = lowJumpMultiplier;
-
-        rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (multiplier - 1) * Time.deltaTime;
-
-        if (Input.GetButtonDown("Fire1")) {
-            //rigidbody.AddForce(Vector3.up * 100f);
-            rigidbody.velocity = Vector3.up * jumpVelocity;
-            playerAnimator.SetTrigger("WingsHaveFlapped");
-        }
-
-        else {
-            playerAnimator.ResetTrigger("WingsHaveFlapped");
-        }
-
-        var frameTransform = frame.GetComponent<Transform>();
-        frameTransform.position += Vector3.right * movementVelocity * Time.deltaTime;
-
-        //foreach (var pipe in pipes) {
-        //    var tr = pipe.GetComponent<Transform>();
-        //    tr.position += Vector3.left * 8f * Time.deltaTime;
-        //}
-
-        if (Input.GetKeyDown(KeyCode.R))
-            SceneManager.LoadScene("main", LoadSceneMode.Single);
-    }
-
     void FixedUpdate()
     {
-        player.transform.Rotate(Vector3.forward * rollAngle);
+        gameState.FixedUpdate();
     }
 
     void UpdateGameState()
     {
         if (gameState is null) {
-            gameState = new GameStateIdle();
+            gameState = new GameStateIdle(this);
         }
 
         else if (gameState is GameStateIdle) {
-            gameState = new GameStatePlay();
+            gameState = new GameStatePlay(this);
         }
 
         FireJustPressed += gameState.OnFireButtonPressed;

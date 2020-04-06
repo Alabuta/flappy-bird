@@ -911,10 +911,7 @@ MonoBehaviour:
   pipesOffset: 8
   pipesStartPoint: {x: 15, y: 0, z: 5}
   idleStateCanvas: {fileID: 562651186}
-  jumpVelocity: 27
-  movementVelocity: 8
-  fallMultiplier: 2.7
-  lowJumpMultiplier: 1.6
+  playerParams: {fileID: 11400000, guid: 9076c5e6c7d80254f8a31f70f2b87c26, type: 2}
 --- !u!1 &1413358652
 GameObject:
   m_ObjectHideFlags: 0
