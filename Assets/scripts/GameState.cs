@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 public abstract class GameState {
     protected GameController gameController;
+    protected InputSystem inputSystem;
 
     public GameState(GameController gc) => gameController = gc;
 
@@ -42,6 +43,8 @@ public class GameStateIdle : GameState {
     {
         playerAnimator.SetTrigger("GameHasStarted");
         canvasAnimator.SetTrigger("GameHasStarted");
+
+        //UpdateGameState();
     }
 
     public override void Update()

@@ -32,8 +32,12 @@ public class GameController : MonoBehaviour {
     private event FireButtonHandler FireIsHeld;
     private event FireButtonHandler FireJustUnPressed;
 
+    private InputSystem inputSystem;
+
     void Start()
     {
+        inputSystem = new InputSystem();
+
         playerAnimator = player.GetComponent<Animator>();
         idleStateCanvasAnimator = idleStateCanvas.GetComponent<Animator>();
 
@@ -50,17 +54,7 @@ public class GameController : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.R))
             SceneManager.LoadScene("main", LoadSceneMode.Single);
 
-        if (Input.GetButtonDown("Fire1")) {
-            FireJustPressed();
-        }
-
-        else if (Input.GetButton("Fire1")) {
-            FireIsHeld();
-        }
-
-        else if (Input.GetButtonUp("Fire1")) {
-            FireJustUnPressed();
-        }
+        inputSystem.Update();
 
         gameState.Update();
     }
@@ -70,7 +64,7 @@ public class GameController : MonoBehaviour {
         gameState.FixedUpdate();
     }
 
-    void UpdateGameState()
+    public void UpdateGameState()
     {
         if (gameState is null) {
             gameState = new GameStateIdle(this);
