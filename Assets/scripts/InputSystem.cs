@@ -1,24 +1,39 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
 
 
-public interface IInputHandler {
-    void OnPressed();
-    void OnHeld();
-    void OnUnpressed();
+struct InputEventHandler {
+    public InputEventHandler(Action onPressed, Action onHeld, Action onUnpressed)
+    {
+        OnPressed = onPressed;
+        OnHeld = onHeld;
+        OnUnpressed = onUnpressed;
+    }
+
+    public Action OnPressed { get; }
+    public Action OnHeld { get; }
+    public Action OnUnpressed { get; }
 }
 
 public class InputSystem {
-    Dictionary<string, List<IInputHandler>> handlers;
+    Dictionary<string, List<InputEventHandler>> handlers;
 
-    public void AddInputHandler(IInputHandler handler, string buttonName)
+    public InputSystem()
+    {
+        handlers = new Dictionary<string, List<InputEventHandler>>();
+    }
+
+    public void AddInputHandler(string buttonName, Action onPressed, Action onHeld, Action onUnpressed)
     {
         if (!handlers.ContainsKey(buttonName))
-            handlers.Add(buttonName, new List<IInputHandler>());
+            handlers.Add(buttonName, new List<InputEventHandler>());
 
-        handlers[buttonName].Add(handler);
+        handlers[buttonName].Add(new InputEventHandler(
+            onPressed, onHeld, onUnpressed
+        ));
     }
 
     public void Update()

@@ -9,11 +9,12 @@ public abstract class GameState {
     protected GameController gameController;
     protected InputSystem inputSystem;
 
-    public GameState(GameController gc) => gameController = gc;
+    public GameState(GameController gc)
+    {
+        gameController = gc;
 
-    public abstract void OnFireButtonPressed();
-    public abstract void OnFireButtonHeld();
-    public abstract void OnFireButtonUnpressed();
+        inputSystem = new InputSystem();
+    }
 
     public abstract void Update();
     public abstract void FixedUpdate();
@@ -23,28 +24,22 @@ public class GameStateIdle : GameState {
     Animator canvasAnimator;
     Animator playerAnimator;
 
+
     public GameStateIdle(GameController gc) : base(gc)
     {
         canvasAnimator = gc.idleStateCanvasAnimator;
         playerAnimator = gc.playerAnimator;
-    }
 
-    public override void OnFireButtonPressed()
-    {
-        ;
-    }
+        inputSystem.AddInputHandler("Fire1",
+            () => {
+                playerAnimator.SetTrigger("GameHasStarted");
+                canvasAnimator.SetTrigger("GameHasStarted");
 
-    public override void OnFireButtonHeld()
-    {
-        ;
-    }
-
-    public override void OnFireButtonUnpressed()
-    {
-        playerAnimator.SetTrigger("GameHasStarted");
-        canvasAnimator.SetTrigger("GameHasStarted");
-
-        //UpdateGameState();
+                //UpdateGameState();
+            },
+            () => { },
+            () => { }
+        );
     }
 
     public override void Update()
@@ -74,22 +69,13 @@ public class GameStatePlay : GameState {
 
         rigidbody = player.GetComponent<Rigidbody2D>();
 
+        inputSystem.AddInputHandler("Fire1",
+            OnFirePressed,
+            () => { },
+            OnFireUnpressed
+        );
+
         playerAnimator.ResetTrigger("GameHasStarted");
-    }
-
-    public override void OnFireButtonPressed()
-    {
-        ;
-    }
-
-    public override void OnFireButtonHeld()
-    {
-        ;
-    }
-
-    public override void OnFireButtonUnpressed()
-    {
-        ;
     }
 
     public override void Update()

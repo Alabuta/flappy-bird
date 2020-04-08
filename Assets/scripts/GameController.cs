@@ -27,11 +27,6 @@ public class GameController : MonoBehaviour {
 
     private GameState gameState = null;
 
-    private delegate void FireButtonHandler();
-    private event FireButtonHandler FireJustPressed;
-    private event FireButtonHandler FireIsHeld;
-    private event FireButtonHandler FireJustUnPressed;
-
     private InputSystem inputSystem;
 
     void Start()
@@ -73,9 +68,5 @@ public class GameController : MonoBehaviour {
         else if (gameState is GameStateIdle) {
             gameState = new GameStatePlay(this);
         }
-
-        FireJustPressed += gameState.OnFireButtonPressed;
-        FireIsHeld += gameState.OnFireButtonHeld;
-        FireJustUnPressed += gameState.OnFireButtonUnpressed;
     }
 }
