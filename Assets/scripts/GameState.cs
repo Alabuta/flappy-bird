@@ -7,7 +7,11 @@ using UnityEngine.SceneManagement;
 
 public abstract class GameState {
     protected GameController gameController;
+
     protected InputSystem inputSystem;
+
+    protected Animator canvasAnimator;
+    protected Animator playerAnimator;
 
     public GameState(GameController gc)
     {
@@ -21,9 +25,6 @@ public abstract class GameState {
 }
 
 public class GameStateIdle : GameState {
-    Animator canvasAnimator;
-    Animator playerAnimator;
-
 
     public GameStateIdle(GameController gc) : base(gc)
     {
@@ -58,9 +59,9 @@ public class GameStatePlay : GameState {
     GameObject frame;
 
     Rigidbody2D rigidbody;
-    Animator playerAnimator;
 
     float rollAngle = 0f;
+
 
     public GameStatePlay(GameController gc) : base(gc)
     {
@@ -90,16 +91,6 @@ public class GameStatePlay : GameState {
 
         rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (multiplier - 1) * Time.deltaTime;
 
-        if (Input.GetButtonDown("Fire1")) {
-            //rigidbody.AddForce(Vector3.up * 100f);
-            rigidbody.velocity = Vector3.up * gameController.playerParams.jumpVelocity;
-            playerAnimator.SetTrigger("WingsHaveFlapped");
-        }
-
-        else {
-            playerAnimator.ResetTrigger("WingsHaveFlapped");
-        }
-
         var frameTransform = frame.GetComponent<Transform>();
         frameTransform.position += Vector3.right * gameController.playerParams.movementVelocity * Time.deltaTime;
 
@@ -112,5 +103,17 @@ public class GameStatePlay : GameState {
     public override void FixedUpdate()
     {
         player.transform.Rotate(Vector3.forward * rollAngle);
+    }
+
+    void OnFirePressed()
+    {
+        //rigidbody.AddForce(Vector3.up * 100f);
+        rigidbody.velocity = Vector3.up * gameController.playerParams.jumpVelocity;
+        playerAnimator.SetTrigger("WingsHaveFlapped");
+    }
+
+    void OnFireUnpressed()
+    {
+        playerAnimator.ResetTrigger("WingsHaveFlapped");
     }
 }
