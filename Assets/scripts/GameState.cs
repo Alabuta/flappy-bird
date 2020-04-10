@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -13,9 +14,12 @@ public abstract class GameState {
     protected Animator canvasAnimator;
     protected Animator playerAnimator;
 
-    public GameState(GameController gc)
+    protected Action OnFinishAction;
+
+    public GameState(GameController gc, Action onFinishAction)
     {
         gameController = gc;
+        OnFinishAction = onFinishAction;
 
         inputSystem = new InputSystem();
     }
@@ -26,7 +30,7 @@ public abstract class GameState {
 
 public class GameStateIdle : GameState {
 
-    public GameStateIdle(GameController gc) : base(gc)
+    public GameStateIdle(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
         canvasAnimator = gc.idleStateCanvasAnimator;
         playerAnimator = gc.playerAnimator;
@@ -36,7 +40,7 @@ public class GameStateIdle : GameState {
                 playerAnimator.SetTrigger("GameHasStarted");
                 canvasAnimator.SetTrigger("GameHasStarted");
 
-                //UpdateGameState();
+                OnFinishAction();
             },
             () => { },
             () => { }
@@ -45,7 +49,7 @@ public class GameStateIdle : GameState {
 
     public override void Update()
     {
-        ;
+        inputSystem.Update();
     }
 
     public override void FixedUpdate()
@@ -63,24 +67,26 @@ public class GameStatePlay : GameState {
     float rollAngle = 0f;
 
 
-    public GameStatePlay(GameController gc) : base(gc)
+    public GameStatePlay(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
         playerAnimator = gc.playerAnimator;
         player = gc.player;
 
         rigidbody = player.GetComponent<Rigidbody2D>();
 
+        playerAnimator.ResetTrigger("GameHasStarted");
+
         inputSystem.AddInputHandler("Fire1",
             OnFirePressed,
             () => { },
             OnFireUnpressed
         );
-
-        playerAnimator.ResetTrigger("GameHasStarted");
     }
 
     public override void Update()
     {
+        inputSystem.Update();
+
         var multiplier = 1f;
 
         if (rigidbody.velocity.y < 0)
@@ -91,8 +97,8 @@ public class GameStatePlay : GameState {
 
         rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (multiplier - 1) * Time.deltaTime;
 
-        var frameTransform = frame.GetComponent<Transform>();
-        frameTransform.position += Vector3.right * gameController.playerParams.movementVelocity * Time.deltaTime;
+        /*var frameTransform = frame.GetComponent<Transform>();
+        frameTransform.position += Vector3.right * gameController.playerParams.movementVelocity * Time.deltaTime;*/
 
         //foreach (var pipe in pipes) {
         //    var tr = pipe.GetComponent<Transform>();

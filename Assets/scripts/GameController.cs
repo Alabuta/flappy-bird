@@ -46,6 +46,7 @@ public class GameController : MonoBehaviour {
 
     void Update()
     {
+        // TODO: remove
         if (Input.GetKeyDown(KeyCode.R))
             SceneManager.LoadScene("main", LoadSceneMode.Single);
 
@@ -62,11 +63,12 @@ public class GameController : MonoBehaviour {
     public void UpdateGameState()
     {
         if (gameState is null) {
-            gameState = new GameStateIdle(this);
-        }
-
-        else if (gameState is GameStateIdle) {
-            gameState = new GameStatePlay(this);
+            gameState = new GameStateIdle(
+                this, () =>
+                {
+                    gameState = new GameStatePlay(this, () => { });
+                }
+            );
         }
     }
 }
