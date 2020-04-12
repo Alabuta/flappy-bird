@@ -29,11 +29,18 @@ public abstract class GameState {
 }
 
 public class GameStateIdle : GameState {
+    Rigidbody2D rigidbody;
+    GameObject player;
 
     public GameStateIdle(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
         canvasAnimator = gc.idleStateCanvasAnimator;
         playerAnimator = gc.playerAnimator;
+
+        player = gc.player;
+
+        rigidbody = player.GetComponent<Rigidbody2D>();
+        rigidbody.simulated = false;
 
         inputSystem.AddInputHandler("Fire1",
             () => {
@@ -54,7 +61,8 @@ public class GameStateIdle : GameState {
 
     public override void FixedUpdate()
     {
-        ;
+        var playerTransform = player.GetComponent<Transform>();
+        playerTransform.position -= Vector3.up * Mathf.Sin(2 * Mathf.PI * Time.time / .58f) * .064f;
     }
 }
 
@@ -66,19 +74,22 @@ public class GameStatePlay : GameState {
 
     float rollAngle = 0f;
 
+    float jumpStartTime = 0f;
+
 
     public GameStatePlay(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
         playerAnimator = gc.playerAnimator;
         player = gc.player;
 
-        rigidbody = player.GetComponent<Rigidbody2D>();
+        rigidbody = gc.player.GetComponent<Rigidbody2D>();
+        rigidbody.simulated = true;
 
         playerAnimator.ResetTrigger("GameHasStarted");
 
         inputSystem.AddInputHandler("Fire1",
             OnFirePressed,
-            () => { },
+            OnFireHeld,
             OnFireUnpressed
         );
     }
@@ -87,15 +98,15 @@ public class GameStatePlay : GameState {
     {
         inputSystem.Update();
 
-        var multiplier = 1f;
+        //var multiplier = 1f;
 
-        if (rigidbody.velocity.y < 0)
-            multiplier = gameController.playerParams.fallMultiplier;
+        //if (rigidbody.velocity.y < 0)
+        //    multiplier = gameController.playerParams.fallMultiplier;
 
         //else if (rigidbody.velocity.y > 0 && !Input.GetButton("Fire1"))
         //    multiplier = lowJumpMultiplier;
 
-        rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (multiplier - 1) * Time.deltaTime;
+        //rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (multiplier - 1) * Time.deltaTime;
 
         /*var frameTransform = frame.GetComponent<Transform>();
         frameTransform.position += Vector3.right * gameController.playerParams.movementVelocity * Time.deltaTime;*/
@@ -108,14 +119,32 @@ public class GameStatePlay : GameState {
 
     public override void FixedUpdate()
     {
-        player.transform.Rotate(Vector3.forward * rollAngle);
+        //player.transform.Rotate(Vector3.forward * rollAngle);
     }
 
     void OnFirePressed()
     {
         //rigidbody.AddForce(Vector3.up * 100f);
-        rigidbody.velocity = Vector3.up * gameController.playerParams.jumpVelocity;
+        //rigidbody.velocity = Vector3.up * gameController.playerParams.jumpVelocity;
         playerAnimator.SetTrigger("WingsHaveFlapped");
+
+        rigidbody.velocity = Vector2.zero;
+        player.transform.Rotate(Vector2.zero);
+
+        jumpStartTime = Time.time;
+
+        rigidbody.AddForce(Vector2.up * Physics2D.gravity * rigidbody.gravityScale / 2f);
+    }
+
+    void OnFireHeld()
+    {
+        if (Time.time - jumpStartTime > .061f) {
+            //rigidbody.velocity;
+        }
+
+        else {
+            ;
+        }
     }
 
     void OnFireUnpressed()
