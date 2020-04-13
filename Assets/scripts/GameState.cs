@@ -76,6 +76,9 @@ public class GameStatePlay : GameState {
 
     float jumpStartTime = 0f;
 
+    delegate void FixedUpdateDelegate();
+    FixedUpdateDelegate FixedUpdateFunc;
+
 
     public GameStatePlay(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
@@ -92,6 +95,8 @@ public class GameStatePlay : GameState {
             OnFireHeld,
             OnFireUnpressed
         );
+
+        FixedUpdateFunc = () => { };
     }
 
     public override void Update()
@@ -119,7 +124,16 @@ public class GameStatePlay : GameState {
 
     public override void FixedUpdate()
     {
-        //player.transform.Rotate(Vector3.forward * rollAngle);
+        FixedUpdateFunc();
+
+        float angle = 0f;
+
+        if (rollAngle < Mathf.PI / 1) {
+            angle = Mathf.PI / 4;
+            rollAngle += Mathf.PI / 4;//16f * rigidbody.velocity.magnitude;
+        }
+
+        player.transform.Rotate(Vector3.forward, angle);
     }
 
     void OnFirePressed()
@@ -133,22 +147,29 @@ public class GameStatePlay : GameState {
 
         jumpStartTime = Time.time;
 
-        rigidbody.AddForce(Vector2.up * Physics2D.gravity * rigidbody.gravityScale / 2f);
+        rigidbody.velocity = Vector2.zero;
+        rigidbody.angularVelocity = 0;
+
+        player.transform.Rotate(Vector3.forward, -rollAngle);
+        rollAngle = 0f;
+
+        FixedUpdateFunc = () => { };
     }
 
     void OnFireHeld()
     {
-        if (Time.time - jumpStartTime > .061f) {
-            //rigidbody.velocity;
-        }
-
-        else {
-            ;
-        }
+        FixedUpdateFunc = () =>
+        {
+            if (Time.time - jumpStartTime < .061f) {
+                rigidbody.AddForce(-Vector2.up * Physics2D.gravity * rigidbody.gravityScale * 5f);
+            }
+        };
     }
 
     void OnFireUnpressed()
     {
         playerAnimator.ResetTrigger("WingsHaveFlapped");
+
+        FixedUpdateFunc = () => { };
     }
 }
