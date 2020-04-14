@@ -126,14 +126,10 @@ public class GameStatePlay : GameState {
     {
         FixedUpdateFunc();
 
-        float angle = 0f;
+        rollAngle += Mathf.Clamp(rigidbody.velocity.y * .01f, -Mathf.PI / 64f, Mathf.PI / 4f);
+        rollAngle = Mathf.Clamp(rollAngle, -Mathf.PI / 2f, Mathf.PI / 5f);
 
-        if (rollAngle < Mathf.PI / 1) {
-            angle = Mathf.PI / 4;
-            rollAngle += Mathf.PI / 4;//16f * rigidbody.velocity.magnitude;
-        }
-
-        player.transform.Rotate(Vector3.forward, angle);
+        player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
     }
 
     void OnFirePressed()
@@ -148,10 +144,7 @@ public class GameStatePlay : GameState {
         jumpStartTime = Time.time;
 
         rigidbody.velocity = Vector2.zero;
-        rigidbody.angularVelocity = 0;
-
-        player.transform.Rotate(Vector3.forward, -rollAngle);
-        rollAngle = 0f;
+        rigidbody.AddForce(Vector2.up * -Physics2D.gravity * rigidbody.gravityScale);
 
         FixedUpdateFunc = () => { };
     }
@@ -160,8 +153,8 @@ public class GameStatePlay : GameState {
     {
         FixedUpdateFunc = () =>
         {
-            if (Time.time - jumpStartTime < .061f) {
-                rigidbody.AddForce(-Vector2.up * Physics2D.gravity * rigidbody.gravityScale * 5f);
+            if (Time.time - jumpStartTime < .064f) {
+                rigidbody.AddForce(Vector2.up * -Physics2D.gravity * rigidbody.gravityScale * 10f);
             }
         };
     }
