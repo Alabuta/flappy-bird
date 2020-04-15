@@ -126,8 +126,14 @@ public class GameStatePlay : GameState {
     {
         FixedUpdateFunc();
 
-        rollAngle += Mathf.Clamp(rigidbody.velocity.y * .01f, -Mathf.PI / 64f, Mathf.PI / 4f);
-        rollAngle = Mathf.Clamp(rollAngle, -Mathf.PI / 2f, Mathf.PI / 5f);
+        float angularVelocity = Mathf.Clamp(rigidbody.velocity.y * .01f, -Mathf.PI / 64f, Mathf.PI / 4f);
+
+        if (angularVelocity < 0f) {
+            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), 1.1f);
+        }
+
+        rollAngle += angularVelocity;
+        rollAngle = Mathf.Clamp(rollAngle, -Mathf.PI / 2f, Mathf.PI / 8f);
 
         player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
     }
@@ -144,7 +150,7 @@ public class GameStatePlay : GameState {
         jumpStartTime = Time.time;
 
         rigidbody.velocity = Vector2.zero;
-        rigidbody.AddForce(Vector2.up * -Physics2D.gravity * rigidbody.gravityScale);
+        //rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale);
 
         FixedUpdateFunc = () => { };
     }
@@ -154,14 +160,19 @@ public class GameStatePlay : GameState {
         FixedUpdateFunc = () =>
         {
             if (Time.time - jumpStartTime < .064f) {
-                rigidbody.AddForce(Vector2.up * -Physics2D.gravity * rigidbody.gravityScale * 10f);
+                rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 10f);
             }
+
+            //else
+            //    rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 10f);
         };
     }
 
     void OnFireUnpressed()
     {
         playerAnimator.ResetTrigger("WingsHaveFlapped");
+
+        rigidbody.AddForce(Physics2D.gravity * rigidbody.gravityScale);
 
         FixedUpdateFunc = () => { };
     }
