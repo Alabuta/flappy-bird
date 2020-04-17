@@ -176,4 +176,42 @@ public class GameStatePlay : GameState {
 
         FixedUpdateFunc = () => { };
     }
+}public class GameStateFail : GameState {
+    Rigidbody2D rigidbody;
+    GameObject player;
+
+    float rollAngle = 0f;
+
+    public GameStateFail(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
+    {
+        //canvasAnimator = gc.idleStateCanvasAnimator;
+
+        gc.playerAnimator.enabled = false;
+
+        player = gc.player;
+
+        rigidbody = player.GetComponent<Rigidbody2D>();
+
+        rigidbody.velocity = Vector2.zero;
+        player.transform.Rotate(Vector2.zero);
+    }
+
+    public override void Update()
+    {
+        ;
+    }
+
+    public override void FixedUpdate()
+    {
+        float angularVelocity = Mathf.Clamp(rigidbody.velocity.y * .01f, -Mathf.PI / 32f, Mathf.PI / 4f);
+
+        if (angularVelocity < 0f) {
+            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), 1.1f);
+        }
+
+        rollAngle += angularVelocity;
+        rollAngle = Mathf.Clamp(rollAngle, -Mathf.PI / 2f, Mathf.PI / 8f);
+
+        player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
+    }
 }
