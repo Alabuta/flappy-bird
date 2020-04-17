@@ -88,6 +88,8 @@ public class GameStatePlay : GameState {
         rigidbody = gc.player.GetComponent<Rigidbody2D>();
         rigidbody.simulated = true;
 
+        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D += OnPlayerCollide;
+
         playerAnimator.ResetTrigger("GameHasStarted");
 
         inputSystem.AddInputHandler("Fire1",
@@ -102,16 +104,6 @@ public class GameStatePlay : GameState {
     public override void Update()
     {
         inputSystem.Update();
-
-        //var multiplier = 1f;
-
-        //if (rigidbody.velocity.y < 0)
-        //    multiplier = gameController.playerParams.fallMultiplier;
-
-        //else if (rigidbody.velocity.y > 0 && !Input.GetButton("Fire1"))
-        //    multiplier = lowJumpMultiplier;
-
-        //rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (multiplier - 1) * Time.deltaTime;
 
         /*var frameTransform = frame.GetComponent<Transform>();
         frameTransform.position += Vector3.right * gameController.playerParams.movementVelocity * Time.deltaTime;*/
@@ -140,8 +132,6 @@ public class GameStatePlay : GameState {
 
     void OnFirePressed()
     {
-        //rigidbody.AddForce(Vector3.up * 100f);
-        //rigidbody.velocity = Vector3.up * gameController.playerParams.jumpVelocity;
         playerAnimator.SetTrigger("WingsHaveFlapped");
 
         rigidbody.velocity = Vector2.zero;
@@ -150,7 +140,7 @@ public class GameStatePlay : GameState {
         jumpStartTime = Time.time;
 
         rigidbody.velocity = Vector2.zero;
-        //rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale);
+        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale);
 
         FixedUpdateFunc = () => { };
     }
@@ -159,12 +149,8 @@ public class GameStatePlay : GameState {
     {
         FixedUpdateFunc = () =>
         {
-            if (Time.time - jumpStartTime < .064f) {
+            if (Time.time - jumpStartTime < .064f)
                 rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 10f);
-            }
-
-            //else
-            //    rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 10f);
         };
     }
 
@@ -176,7 +162,19 @@ public class GameStatePlay : GameState {
 
         FixedUpdateFunc = () => { };
     }
-}public class GameStateFail : GameState {
+
+    void OnPlayerCollide(Collision2D collision)
+    {
+        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D -= OnPlayerCollide;
+
+        rigidbody.velocity = Vector2.zero;
+        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 32f);
+
+        OnFinishAction();
+    }
+}
+
+public class GameStateFail : GameState {
     Rigidbody2D rigidbody;
     GameObject player;
 

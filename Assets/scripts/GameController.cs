@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -33,6 +34,8 @@ public class GameController : MonoBehaviour {
     {
         inputSystem = new InputSystem();
 
+        player.AddComponent<Collider2DEventsHandler>();
+
         playerAnimator = player.GetComponent<Animator>();
         idleStateCanvasAnimator = idleStateCanvas.GetComponent<Animator>();
 
@@ -62,13 +65,23 @@ public class GameController : MonoBehaviour {
 
     public void UpdateGameState()
     {
+        Action onFinishGameStateFail = () =>
+        {
+            ;
+        };
+
+        Action onFinishGameStatePlay = () =>
+        {
+            gameState = new GameStateFail(this, onFinishGameStateFail);
+        };
+
+        Action onFinishGameStateIdle = () =>
+        {
+            gameState = new GameStatePlay(this, onFinishGameStatePlay);
+        };
+
         if (gameState is null) {
-            gameState = new GameStateIdle(
-                this, () =>
-                {
-                    gameState = new GameStatePlay(this, () => { });
-                }
-            );
+            gameState = new GameStateIdle(this, onFinishGameStateIdle);
         }
     }
 }
