@@ -189,8 +189,11 @@ public class GameStateFail : GameState {
         player = gc.player;
 
         rigidbody = player.GetComponent<Rigidbody2D>();
-
         rigidbody.velocity = Vector2.zero;
+
+        var collider = player.GetComponent<Collider2D>();
+        collider.isTrigger = true;
+
         player.transform.Rotate(Vector2.zero);
     }
 
