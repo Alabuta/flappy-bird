@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class UVScroller : MonoBehaviour {
-    public Vector2 step = new Vector2(0f, 0f);
+    public Vector2 velocity = new Vector2(0f, 0f);
 
-    private Vector2 uvRange;
-    private Vector4 spriteCorners;
+    Vector2 offset;
 
-    private Material material;
+    Vector2 uvRange;
+    Vector4 spriteCorners;
 
-    private float timer = 0f;
+    Material material;
 
     void Start()
     {
+        offset = new Vector2(0f, 0f);
+
         var spriteRenderer = GetComponent<SpriteRenderer>();
         var sprite = spriteRenderer.sprite;
 
@@ -30,13 +32,16 @@ public class UVScroller : MonoBehaviour {
         uvRange = max - min;
 
         spriteCorners = new Vector4(min.x, min.y, max.x, max.y);
+        Debug.Log(spriteCorners);
+        Debug.Log(sprite.bounds);
+        Debug.Log(sprite.pixelsPerUnit);
+        Debug.Log(sprite.border);
     }
 
     void Update()
     {
-        timer += Time.deltaTime;
+        offset += velocity * Time.deltaTime;
 
-        var offset = step * timer;
         var clampedOffset = offset - new Vector2(Mathf.Floor(offset.x), Mathf.Floor(offset.y));
 
         material.SetVector("_UVScroll", clampedOffset * uvRange);

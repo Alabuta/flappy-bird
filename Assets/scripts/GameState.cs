@@ -9,6 +9,8 @@ using UnityEngine.SceneManagement;
 public abstract class GameState {
     protected GameController gameController;
 
+    protected PlayerParams playerParams;
+
     protected InputSystem inputSystem;
 
     protected Animator canvasAnimator;
@@ -16,12 +18,17 @@ public abstract class GameState {
 
     protected Action OnFinishAction;
 
+    public float movementVelocity { get; protected set; }
+
     public GameState(GameController gc, Action onFinishAction)
     {
         gameController = gc;
         OnFinishAction = onFinishAction;
 
         inputSystem = new InputSystem();
+
+        playerParams = gc.playerParams;
+        movementVelocity = playerParams.movementVelocity;
     }
 
     public abstract void Update();
@@ -88,7 +95,7 @@ public class GameStatePlay : GameState {
         rigidbody = gc.player.GetComponent<Rigidbody2D>();
         rigidbody.simulated = true;
 
-        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D += OnPlayerCollide;
+        player.GetComponent<Collider2DEventsHandler>().onTriggerEnter2D += OnPlayerTriggerCollision;
 
         playerAnimator.ResetTrigger("GameHasStarted");
 
@@ -163,22 +170,25 @@ public class GameStatePlay : GameState {
         FixedUpdateFunc = () => { };
     }
 
-    void OnPlayerCollide(Collision2D collision)
+    void OnPlayerTriggerCollision(Collider2D collider)
     {
-        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D -= OnPlayerCollide;
+        player.GetComponent<Collider2DEventsHandler>().onTriggerEnter2D -= OnPlayerTriggerCollision;
 
         rigidbody.velocity = Vector2.zero;
-        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 32f);
+        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 27f);
 
         OnFinishAction();
     }
 }
 
 public class GameStateFail : GameState {
-    Rigidbody2D rigidbody;
     GameObject player;
+    Rigidbody2D rigidbody;
+    UVScroller uvScroller;
 
-    float rollAngle = 0f;
+    float rollAngle;
+    float startTime;
+    float timeScaler;
 
     public GameStateFail(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
@@ -188,13 +198,16 @@ public class GameStateFail : GameState {
 
         player = gc.player;
 
+        rollAngle = 0f;
+
         rigidbody = player.GetComponent<Rigidbody2D>();
         rigidbody.velocity = Vector2.zero;
 
-        var collider = player.GetComponent<Collider2D>();
-        collider.isTrigger = true;
-
         player.transform.Rotate(Vector2.zero);
+
+        startTime = Time.time;
+
+        uvScroller = gc.platform.GetComponent<UVScroller>();
     }
 
     public override void Update()
@@ -214,5 +227,9 @@ public class GameStateFail : GameState {
         rollAngle = Mathf.Clamp(rollAngle, -Mathf.PI / 2f, Mathf.PI / 8f);
 
         player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
+
+        movementVelocity = Mathf.Lerp(playerParams.movementVelocity, 0, (Time.time - startTime) / 1f);
+
+        //uvScroller.velocity = Mathf.Lerp(timeScaler, 0, (Time.time - startTime) / 1f);
     }
 }

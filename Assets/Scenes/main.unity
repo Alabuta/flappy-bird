@@ -672,8 +672,8 @@ GameObject:
   m_Component:
   - component: {fileID: 868233063}
   - component: {fileID: 868233066}
-  - component: {fileID: 868233065}
   - component: {fileID: 868233064}
+  - component: {fileID: 868233065}
   - component: {fileID: 868233067}
   m_Layer: 8
   m_Name: platform
@@ -727,21 +727,21 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_UsedByComposite: 1
+  m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 21, y: 7}
-    newSize: {x: 20, y: 7}
-    adaptiveTilingThreshold: 0.5
+    newSize: {x: 18, y: 7}
+    adaptiveTilingThreshold: 0.216
     drawMode: 2
     adaptiveTiling: 0
   m_AutoTiling: 1
   serializedVersion: 2
-  m_Size: {x: 21, y: 7}
+  m_Size: {x: 20, y: 7}
   m_EdgeRadius: 0
 --- !u!212 &868233066
 SpriteRenderer:
@@ -788,8 +788,8 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20, y: 7}
-  m_AdaptiveModeThreshold: 0.5
+  m_Size: {x: 18, y: 7}
+  m_AdaptiveModeThreshold: 0.216
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
@@ -806,7 +806,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 889784cd07a35664f989b4936865727a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  step: {x: 0.38, y: 0}
+  velocity: {x: 0.38, y: 0}
 --- !u!1 &1092650309
 GameObject:
   m_ObjectHideFlags: 0
@@ -906,6 +906,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 695781962}
   frame: {fileID: 1092650309}
+  platform: {fileID: 868233062}
   prefabPipes: {fileID: 5303355669785752430, guid: aad28cb5f552a704abb9b6a5c1f722ea,
     type: 3}
   pipesOffset: 8

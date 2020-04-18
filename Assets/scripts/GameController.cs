@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour {
     public GameObject player;
     public GameObject frame;
+    public GameObject platform;
 
     public GameObject prefabPipes;
     public float pipesOffset = 1f;
@@ -24,7 +25,7 @@ public class GameController : MonoBehaviour {
 
     private Queue<GameObject> pipes;
 
-    private int playerScore = 0;
+    //private int playerScore = 0;
 
     private GameState gameState = null;
 
