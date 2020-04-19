@@ -24,9 +24,7 @@ public class GameController : MonoBehaviour {
     public PlayerParams playerParams;// { get; private set; }
     public PipesParams pipesParams;
 
-    private Queue<GameObject> pipes;
-
-    //private int playerScore = 0;
+    public Queue<GameObject> pipes;
 
     private GameState gameState = null;
 

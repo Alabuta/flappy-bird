@@ -116,13 +116,28 @@ public class GameStatePlay : GameState {
     {
         inputSystem.Update();
 
-        /*var frameTransform = frame.GetComponent<Transform>();
-        frameTransform.position += Vector3.right * gameController.playerParams.movementVelocity * Time.deltaTime;*/
+        foreach (var pipe in gameController.pipes) {
+            var tr = pipe.GetComponent<Transform>();
+            tr.position += Vector3.left * movementVelocity * Time.deltaTime;
+        }
 
-        //foreach (var pipe in pipes) {
-        //    var tr = pipe.GetComponent<Transform>();
-        //    tr.position += Vector3.left * 8f * Time.deltaTime;
-        //}
+        var leftPipeGroup = gameController.pipes.Peek();
+        var leftPipeBounds = leftPipeGroup.GetComponentInChildren<Collider2D>().bounds;
+
+        var cam = Camera.main;
+        var planes = GeometryUtility.CalculateFrustumPlanes(cam);
+
+        bool visible = GeometryUtility.TestPlanesAABB(planes, leftPipeBounds);
+        Debug.Log(visible);
+
+        if (!visible) {
+            leftPipeGroup = gameController.pipes.Dequeue();
+
+            var tr = leftPipeGroup.GetComponent<Transform>();
+            tr.position += Vector3.right * gameController.pipesParams.offset * (gameController.pipesParams.number);
+
+            gameController.pipes.Enqueue(leftPipeGroup);
+        }
     }
 
     public override void FixedUpdate()
@@ -221,6 +236,11 @@ public class GameStateFail : GameState {
     {
         ;
         uvScroller.velocity = new Vector2(movementVelocity, 0f);
+
+        foreach (var pipe in gameController.pipes) {
+            var tr = pipe.GetComponent<Transform>();
+            tr.position += Vector3.left * movementVelocity * Time.deltaTime;
+        }
     }
 
     public override void FixedUpdate()
