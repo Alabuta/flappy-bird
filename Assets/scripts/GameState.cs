@@ -49,6 +49,8 @@ public class GameStateIdle : GameState {
         rigidbody = player.GetComponent<Rigidbody2D>();
         rigidbody.simulated = false;
 
+        gc.platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
+
         inputSystem.AddInputHandler("Fire1",
             () => {
                 playerAnimator.SetTrigger("GameHasStarted");
@@ -104,6 +106,8 @@ public class GameStatePlay : GameState {
             OnFireHeld,
             OnFireUnpressed
         );
+
+        gc.platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
 
         FixedUpdateFunc = () => { };
     }
@@ -216,6 +220,7 @@ public class GameStateFail : GameState {
     public override void Update()
     {
         ;
+        uvScroller.velocity = new Vector2(movementVelocity, 0f);
     }
 
     public override void FixedUpdate()

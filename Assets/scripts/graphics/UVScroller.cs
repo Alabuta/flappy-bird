@@ -6,7 +6,7 @@ public class UVScroller : MonoBehaviour {
     public Vector2 velocity = new Vector2(0f, 0f);
 
     Vector2 offset;
-
+    Vector2 unitsPerUV;
     Vector2 uvRange;
     Vector4 spriteCorners;
 
@@ -14,7 +14,7 @@ public class UVScroller : MonoBehaviour {
 
     void Start()
     {
-        offset = new Vector2(0f, 0f);
+        offset = Vector2.zero;
 
         var spriteRenderer = GetComponent<SpriteRenderer>();
         var sprite = spriteRenderer.sprite;
@@ -31,16 +31,14 @@ public class UVScroller : MonoBehaviour {
 
         uvRange = max - min;
 
+        unitsPerUV = new Vector2(sprite.bounds.extents.x, sprite.bounds.extents.y) / uvRange;
+
         spriteCorners = new Vector4(min.x, min.y, max.x, max.y);
-        Debug.Log(spriteCorners);
-        Debug.Log(sprite.bounds);
-        Debug.Log(sprite.pixelsPerUnit);
-        Debug.Log(sprite.border);
     }
 
     void Update()
     {
-        offset += velocity * Time.deltaTime;
+        offset += velocity * Time.deltaTime / unitsPerUV;
 
         var clampedOffset = offset - new Vector2(Mathf.Floor(offset.x), Mathf.Floor(offset.y));
 
