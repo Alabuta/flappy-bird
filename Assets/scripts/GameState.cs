@@ -125,14 +125,17 @@ public class GameStatePlay : GameState {
     {
         FixedUpdateFunc();
 
-        float angularVelocity = Mathf.Clamp(rigidbody.velocity.y * .01f, -Mathf.PI / 64f, Mathf.PI / 4f);
+        float angularVelocity = Mathf.Clamp(
+            rigidbody.velocity.y * playerParams.angularVelocityScaler,
+            playerParams.minAngularVelocity, playerParams.maxAngularVelocity
+        );
 
         if (angularVelocity < 0f) {
-            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), 1.1f);
+            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), playerParams.negativeAngularVelocityScaler);
         }
 
         rollAngle += angularVelocity;
-        rollAngle = Mathf.Clamp(rollAngle, -Mathf.PI / 2f, Mathf.PI / 8f);
+        rollAngle = Mathf.Clamp(rollAngle, playerParams.minRollAngle, playerParams.maxRollAngle);
 
         player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
     }
@@ -156,8 +159,8 @@ public class GameStatePlay : GameState {
     {
         FixedUpdateFunc = () =>
         {
-            if (Time.time - jumpStartTime < .064f)
-                rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 10f);
+            if (Time.time - jumpStartTime < .0964f)
+                rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.jumpForceScale);
         };
     }
 
@@ -175,7 +178,7 @@ public class GameStatePlay : GameState {
         player.GetComponent<Collider2DEventsHandler>().onTriggerEnter2D -= OnPlayerTriggerCollision;
 
         rigidbody.velocity = Vector2.zero;
-        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * 27f);
+        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.deadJumpForceScale);
 
         OnFinishAction();
     }
@@ -217,14 +220,17 @@ public class GameStateFail : GameState {
 
     public override void FixedUpdate()
     {
-        float angularVelocity = Mathf.Clamp(rigidbody.velocity.y * .01f, -Mathf.PI / 32f, Mathf.PI / 4f);
+        float angularVelocity = Mathf.Clamp(
+            rigidbody.velocity.y * playerParams.angularVelocityScaler,
+            playerParams.minAngularVelocity * 2f, playerParams.maxAngularVelocity
+        );
 
         if (angularVelocity < 0f) {
-            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), 1.1f);
+            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), playerParams.negativeAngularVelocityScaler);
         }
 
         rollAngle += angularVelocity;
-        rollAngle = Mathf.Clamp(rollAngle, -Mathf.PI / 2f, Mathf.PI / 8f);
+        rollAngle = Mathf.Clamp(rollAngle, playerParams.minRollAngle, playerParams.maxRollAngle);
 
         player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
 

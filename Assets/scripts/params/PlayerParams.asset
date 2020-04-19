@@ -12,8 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ec27c3cff560f34f8f95b42280dcb1a, type: 3}
   m_Name: PlayerParams
   m_EditorClassIdentifier: 
-  jumpVelocity: 1
+  jumpForceScale: 8
+  deadJumpForceScale: 27
   movementVelocity: 8
-  fallMultiplier: 2.4
-  lowJumpMultiplier: 2
-  radius: 0
+  minRollAngle: -1.5707964
+  maxRollAngle: 0.3926991
+  angularVelocityScaler: 0.01
+  minAngularVelocity: -0.049087387
+  maxAngularVelocity: 0.7853982
+  negativeAngularVelocityScaler: 1.1
