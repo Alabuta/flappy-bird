@@ -22,6 +22,7 @@ public class GameController : MonoBehaviour {
     public Animator idleStateCanvasAnimator { get; private set; }
 
     public PlayerParams playerParams;// { get; private set; }
+    public PipesParams pipesParams;
 
     private Queue<GameObject> pipes;
 
@@ -43,7 +44,7 @@ public class GameController : MonoBehaviour {
         pipes = new Queue<GameObject>();
 
         for (var i = 0; i < 5; ++i)
-            pipes.Enqueue(Instantiate(prefabPipes, pipesStartPoint + Vector3.right * pipesOffset * i, Quaternion.identity));
+            pipes.Enqueue(Instantiate(prefabPipes, pipesParams.startPoint + Vector3.right * pipesParams.offset * i, Quaternion.identity));
 
         UpdateGameState();
     }
