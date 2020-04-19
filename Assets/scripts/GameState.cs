@@ -97,7 +97,7 @@ public class GameStatePlay : GameState {
         rigidbody = gc.player.GetComponent<Rigidbody2D>();
         rigidbody.simulated = true;
 
-        player.GetComponent<Collider2DEventsHandler>().onTriggerEnter2D += OnPlayerTriggerCollision;
+        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D += OnPlayerCollision;
 
         playerAnimator.ResetTrigger("GameHasStarted");
 
@@ -169,7 +169,6 @@ public class GameStatePlay : GameState {
         jumpStartTime = Time.time;
 
         rigidbody.velocity = Vector2.zero;
-        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale);
 
         FixedUpdateFunc = () => { };
     }
@@ -192,9 +191,9 @@ public class GameStatePlay : GameState {
         FixedUpdateFunc = () => { };
     }
 
-    void OnPlayerTriggerCollision(Collider2D collider)
+    void OnPlayerCollision(Collision2D collision)
     {
-        player.GetComponent<Collider2DEventsHandler>().onTriggerEnter2D -= OnPlayerTriggerCollision;
+        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D -= OnPlayerCollision;
 
         rigidbody.velocity = Vector2.zero;
         rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.deadJumpForceScale);
@@ -210,7 +209,7 @@ public class GameStateFail : GameState {
 
     float rollAngle;
     float startTime;
-    float timeScaler;
+    float originalMovementVelocity;
 
     public GameStateFail(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
@@ -219,6 +218,8 @@ public class GameStateFail : GameState {
         gc.playerAnimator.enabled = false;
 
         player = gc.player;
+
+        player.GetComponent<Collider2D>().isTrigger = true;
 
         rollAngle = 0f;
 
@@ -230,11 +231,13 @@ public class GameStateFail : GameState {
         startTime = Time.time;
 
         uvScroller = gc.platform.GetComponent<UVScroller>();
+
+        originalMovementVelocity = movementVelocity;
     }
 
     public override void Update()
     {
-        ;
+        movementVelocity = Mathf.Lerp(originalMovementVelocity, 0, Time.time - startTime);
         uvScroller.velocity = new Vector2(movementVelocity, 0f);
 
         foreach (var pipe in gameController.pipes) {
@@ -258,9 +261,5 @@ public class GameStateFail : GameState {
         rollAngle = Mathf.Clamp(rollAngle, playerParams.minRollAngle, playerParams.maxRollAngle);
 
         player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
-
-        movementVelocity = Mathf.Lerp(playerParams.movementVelocity, 0, (Time.time - startTime) / 1f);
-
-        //uvScroller.velocity = Mathf.Lerp(timeScaler, 0, (Time.time - startTime) / 1f);
     }
 }
