@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ec27c3cff560f34f8f95b42280dcb1a, type: 3}
   m_Name: PlayerParams
   m_EditorClassIdentifier: 
-  jumpForceScale: 8
+  jumpForceScale: 7
   deadJumpForceScale: 27
   movementVelocity: 8
   minRollAngle: -1.5707964

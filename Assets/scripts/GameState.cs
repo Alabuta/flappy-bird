@@ -90,6 +90,8 @@ public class GameStatePlay : GameState {
 
     System.Random randomGenerator;
 
+    float traveledDistance = 0f;
+
 
     public GameStatePlay(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
@@ -110,6 +112,8 @@ public class GameStatePlay : GameState {
         );
 
         gc.platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
+
+        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.jumpForceScale);
 
         FixedUpdateFunc = () => { };
     }
@@ -147,6 +151,11 @@ public class GameStatePlay : GameState {
 
             gameController.pipes.Enqueue(leftPipeGroup);
         }
+
+        traveledDistance += (Vector3.left * movementVelocity * Time.deltaTime).magnitude;
+
+        if (traveledDistance > 4f)
+            gameController.idleStateCanvas.transform.position += Vector3.left * movementVelocity * Time.deltaTime;
     }
 
     public override void FixedUpdate()
@@ -253,6 +262,8 @@ public class GameStateFail : GameState {
             var tr = pipe.GetComponent<Transform>();
             tr.position += Vector3.left * movementVelocity * Time.deltaTime;
         }
+
+        gameController.idleStateCanvas.transform.position += Vector3.left * movementVelocity * Time.deltaTime;
     }
 
     public override void FixedUpdate()
