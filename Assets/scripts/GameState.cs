@@ -88,6 +88,8 @@ public class GameStatePlay : GameState {
     delegate void FixedUpdateDelegate();
     FixedUpdateDelegate FixedUpdateFunc;
 
+    System.Random randomGenerator;
+
 
     public GameStatePlay(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
@@ -128,13 +130,20 @@ public class GameStatePlay : GameState {
         var planes = GeometryUtility.CalculateFrustumPlanes(cam);
 
         bool visible = GeometryUtility.TestPlanesAABB(planes, leftPipeBounds);
-        Debug.Log(visible);
 
-        if (!visible) {
+        if (!visible && leftPipeGroup.transform.position.x < 0f) {
             leftPipeGroup = gameController.pipes.Dequeue();
 
+            var pipesParams = gameController.pipesParams;
+
+            var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
+
+            foreach (var transform in leftPipeGroup.GetComponentsInChildren<Transform>())
+                transform.localPosition = new Vector3(0f, gap * Mathf.Sign(transform.localPosition.y), transform.localPosition.z);
+
             var tr = leftPipeGroup.GetComponent<Transform>();
-            tr.position += Vector3.right * gameController.pipesParams.offset * (gameController.pipesParams.number);
+            tr.position += Vector3.right * pipesParams.offset * (gameController.pipesParams.number - 1f);
+            tr.position += Vector3.Scale(pipesParams.randomOffset, UnityEngine.Random.insideUnitSphere);
 
             gameController.pipes.Enqueue(leftPipeGroup);
         }

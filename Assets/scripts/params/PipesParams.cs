@@ -8,5 +8,12 @@ public sealed class PipesParams : ScriptableObject {
     [Range(0, 20)]
     public float offset = 8f;
 
+    [Range(0, 5)]
+    public float pipesVerticalGapMin = 2f;
+    [Range(0, 5)]
+    public float pipesVerticalGapMax = 5f;
+
+    public Vector3 randomOffset = new Vector3(1f, 10f, 0f);
+
     public Vector3 startPoint = new Vector3(16f, 0f, 5f);
 }

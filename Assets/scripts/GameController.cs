@@ -41,8 +41,19 @@ public class GameController : MonoBehaviour {
 
         pipes = new Queue<GameObject>();
 
-        for (var i = 0; i < 5; ++i)
-            pipes.Enqueue(Instantiate(prefabPipes, pipesParams.startPoint + Vector3.right * pipesParams.offset * i, Quaternion.identity));
+        for (var i = 0; i < 5; ++i) {
+            var position = pipesParams.startPoint + Vector3.right * pipesParams.offset * i;
+            var offset = Vector3.Scale(pipesParams.randomOffset, UnityEngine.Random.insideUnitSphere);
+
+            var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
+
+            foreach (var transform in prefabPipes.GetComponentsInChildren<Transform>())
+                transform.localPosition = new Vector3(0f, gap * Mathf.Sign(transform.localPosition.y), transform.localPosition.z);
+
+            var pipe = Instantiate(prefabPipes, position + offset, Quaternion.identity);
+
+            pipes.Enqueue(pipe);
+        }
 
         UpdateGameState();
     }
@@ -63,7 +74,7 @@ public class GameController : MonoBehaviour {
         gameState.FixedUpdate();
     }
 
-    public void UpdateGameState()
+    void UpdateGameState()
     {
         Action onFinishGameStateFail = () =>
         {
