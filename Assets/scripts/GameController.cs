@@ -17,6 +17,7 @@ public class GameController : MonoBehaviour {
     public Vector3 pipesStartPoint = new Vector3(0, 0, 4);
 
     public Canvas idleStateCanvas;
+    public GameObject playStateCanvas;
 
     public Animator playerAnimator { get; private set; }
     public Animator idleStateCanvasAnimator { get; private set; }
@@ -47,10 +48,22 @@ public class GameController : MonoBehaviour {
 
             var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
 
-            foreach (var transform in prefabPipes.GetComponentsInChildren<Transform>())
-                transform.localPosition = new Vector3(0f, gap * Mathf.Sign(transform.localPosition.y), transform.localPosition.z);
+            var pipe = Instantiate(prefabPipes, Vector3.zero, Quaternion.identity);
 
-            var pipe = Instantiate(prefabPipes, position + offset, Quaternion.identity);
+            position += offset;
+
+            foreach (var transform in pipe.GetComponentsInChildren<Transform>())
+                transform.position = position + Vector3.up * gap * Mathf.Sign(transform.localPosition.y);
+
+            var colliderGameObject = new GameObject("collider");
+            colliderGameObject.tag = "PipesGap";
+
+            var collider = colliderGameObject.AddComponent<BoxCollider2D>();
+            collider.size = new Vector2(1f, gap * 2f);
+            collider.isTrigger = true;
+
+            colliderGameObject.transform.position = position;
+            colliderGameObject.transform.parent = pipe.transform;
 
             pipes.Enqueue(pipe);
         }

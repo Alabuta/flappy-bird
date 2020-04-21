@@ -4,7 +4,8 @@ using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.SocialPlatforms.Impl;
+using UnityEngine.UI;
 
 public abstract class GameState {
     protected GameController gameController;
@@ -92,6 +93,8 @@ public class GameStatePlay : GameState {
 
     float traveledDistance = 0f;
 
+    float playScore = 0f;
+
 
     public GameStatePlay(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
@@ -101,7 +104,8 @@ public class GameStatePlay : GameState {
         rigidbody = gc.player.GetComponent<Rigidbody2D>();
         rigidbody.simulated = true;
 
-        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D += OnPlayerCollision;
+        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D += OnPlayerCollisionEnter;
+        player.GetComponent<Collider2DEventsHandler>().onTriggerExit2D += OnPlayerCollisionExit;
 
         playerAnimator.ResetTrigger("GameHasStarted");
 
@@ -209,14 +213,23 @@ public class GameStatePlay : GameState {
         FixedUpdateFunc = () => { };
     }
 
-    void OnPlayerCollision(Collision2D collision)
+    void OnPlayerCollisionEnter(Collision2D collision)
     {
-        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D -= OnPlayerCollision;
+        player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D -= OnPlayerCollisionEnter;
+        player.GetComponent<Collider2DEventsHandler>().onTriggerExit2D -= OnPlayerCollisionExit;
 
         rigidbody.velocity = Vector2.zero;
         rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.deadJumpForceScale);
 
         OnFinishAction();
+    }
+
+    void OnPlayerCollisionExit(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "PipesGap") {
+            var scoreText = gameController.playStateCanvas.transform.Find("score-text");
+            scoreText.GetComponent<Text>().text = (++playScore).ToString();
+        }
     }
 }
 
