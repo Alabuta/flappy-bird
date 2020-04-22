@@ -12,12 +12,10 @@ public class GameController : MonoBehaviour {
     public GameObject platform;
 
     public GameObject prefabPipes;
-    public float pipesOffset = 1f;
 
-    public Vector3 pipesStartPoint = new Vector3(0, 0, 4);
-
-    public Canvas idleStateCanvas;
+    public GameObject idleStateCanvas;
     public GameObject playStateCanvas;
+    public GameObject failStateCanvas;
 
     public Animator playerAnimator { get; private set; }
     public Animator idleStateCanvasAnimator { get; private set; }
@@ -39,6 +37,8 @@ public class GameController : MonoBehaviour {
 
         playerAnimator = player.GetComponent<Animator>();
         idleStateCanvasAnimator = idleStateCanvas.GetComponent<Animator>();
+
+        failStateCanvas.SetActive(false);
 
         pipes = new Queue<GameObject>();
 
@@ -91,7 +91,7 @@ public class GameController : MonoBehaviour {
     {
         Action onFinishGameStateFail = () =>
         {
-            ;
+            gameState = new GameStateResult(this, () => { });
         };
 
         Action onFinishGameStatePlay = () =>

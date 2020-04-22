@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   number: 5
   offset: 12
-  pipesVerticalGapMin: 2.7
+  pipesVerticalGapMin: 3
   pipesVerticalGapMax: 4.4
   randomOffset: {x: 1, y: 3.2, z: 0}
   startPoint: {x: 16, y: 0, z: 5}

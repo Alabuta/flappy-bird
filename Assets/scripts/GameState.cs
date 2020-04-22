@@ -45,6 +45,9 @@ public class GameStateIdle : GameState {
         canvasAnimator = gc.idleStateCanvasAnimator;
         playerAnimator = gc.playerAnimator;
 
+        gc.playStateCanvas.SetActive(true);
+        gc.failStateCanvas.SetActive(false);
+
         player = gc.player;
 
         rigidbody = player.GetComponent<Rigidbody2D>();
@@ -199,7 +202,7 @@ public class GameStatePlay : GameState {
     {
         FixedUpdateFunc = () =>
         {
-            if (Time.time - jumpStartTime < .0964f)
+            if (Time.time - jumpStartTime < .072f)
                 rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.jumpForceScale);
         };
     }
@@ -264,6 +267,7 @@ public class GameStateFail : GameState {
         uvScroller = gc.platform.GetComponent<UVScroller>();
 
         originalMovementVelocity = movementVelocity;
+
     }
 
     public override void Update()
@@ -277,6 +281,9 @@ public class GameStateFail : GameState {
         }
 
         gameController.idleStateCanvas.transform.position += Vector3.left * movementVelocity * Time.deltaTime;
+
+        if (movementVelocity < 1e-2f)
+           OnFinishAction();
     }
 
     public override void FixedUpdate()
@@ -294,5 +301,23 @@ public class GameStateFail : GameState {
         rollAngle = Mathf.Clamp(rollAngle, playerParams.minRollAngle, playerParams.maxRollAngle);
 
         player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
+    }
+}
+
+public class GameStateResult : GameState {
+    public GameStateResult(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
+    {
+        gc.playStateCanvas.SetActive(false);
+        gc.failStateCanvas.SetActive(true);
+    }
+
+    public override void Update()
+    {
+        ;
+    }
+
+    public override void FixedUpdate()
+    {
+        ;
     }
 }
