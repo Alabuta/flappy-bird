@@ -268,6 +268,8 @@ public class GameStateFail : GameState {
 
         originalMovementVelocity = movementVelocity;
 
+        gc.playStateCanvas.GetComponent<Animator>().SetTrigger("GameFailed");
+
     }
 
     public override void Update()
@@ -282,8 +284,10 @@ public class GameStateFail : GameState {
 
         gameController.idleStateCanvas.transform.position += Vector3.left * movementVelocity * Time.deltaTime;
 
-        if (movementVelocity < 1e-2f)
-           OnFinishAction();
+        if (movementVelocity < 1e-2f) {
+            gameController.playStateCanvas.SetActive(false);
+            OnFinishAction();
+        }
     }
 
     public override void FixedUpdate()
@@ -307,8 +311,10 @@ public class GameStateFail : GameState {
 public class GameStateResult : GameState {
     public GameStateResult(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
-        gc.playStateCanvas.SetActive(false);
         gc.failStateCanvas.SetActive(true);
+
+        var scoreText = gc.failStateCanvas.transform.Find("score").transform.Find("score-text");
+        scoreText.GetComponent<Text>().text = (0123456789).ToString();
     }
 
     public override void Update()
