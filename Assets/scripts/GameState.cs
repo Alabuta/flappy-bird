@@ -1,33 +1,29 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public abstract class GameState {
     protected GameController gameController;
 
-    protected PlayerParams playerParams;
-
     protected InputSystem inputSystem;
 
-    protected Animator canvasAnimator;
-    protected Animator playerAnimator;
-
     protected Action OnFinishAction;
+
+    protected GameObject player;
+
+    protected readonly PlayerParams playerParams;
 
     public float movementVelocity { get; protected set; }
 
     public GameState(GameController gc, Action onFinishAction)
     {
-        gameController = gc;
         OnFinishAction = onFinishAction;
 
         inputSystem = new InputSystem();
 
+        gameController = gc;
+        player = gc.player;
         playerParams = gc.playerParams;
         movementVelocity = playerParams.movementVelocity;
     }
@@ -37,28 +33,20 @@ public abstract class GameState {
 }
 
 public class GameStateIdle : GameState {
-    Rigidbody2D rigidbody;
-    GameObject player;
-
     public GameStateIdle(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
-        canvasAnimator = gc.idleStateCanvasAnimator;
-        playerAnimator = gc.playerAnimator;
-
         gc.playStateCanvas.SetActive(true);
         gc.failStateCanvas.SetActive(false);
 
-        player = gc.player;
-
-        rigidbody = player.GetComponent<Rigidbody2D>();
+        var rigidbody = player.GetComponent<Rigidbody2D>();
         rigidbody.simulated = false;
 
         gc.platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
 
         inputSystem.AddInputHandler("Fire1",
             () => {
-                playerAnimator.SetTrigger("GameHasStarted");
-                canvasAnimator.SetTrigger("GameHasStarted");
+                player.GetComponent<Animator>().SetTrigger("GameHasStarted");
+                gc.idleStateCanvas.GetComponent<Animator>().SetTrigger("GameHasStarted");
 
                 OnFinishAction();
             },
@@ -75,42 +63,29 @@ public class GameStateIdle : GameState {
     public override void FixedUpdate()
     {
         var playerTransform = player.GetComponent<Transform>();
-        playerTransform.position -= Vector3.up * Mathf.Sin(2 * Mathf.PI * Time.time / .58f) * .064f;
+        playerTransform.position -= Vector3.up * Mathf.Sin(2f * Mathf.PI * Time.time / .58f) * .064f;
     }
 }
 
 public class GameStatePlay : GameState {
-    GameObject player;
-    GameObject frame;
-
-    Rigidbody2D rigidbody;
+    Rigidbody2D playerRigidbody;
 
     float rollAngle = 0f;
-
     float jumpStartTime = 0f;
+    float traveledDistance = 0f;
+    float playScore = 0f;
 
     delegate void FixedUpdateDelegate();
     FixedUpdateDelegate FixedUpdateFunc;
 
-    System.Random randomGenerator;
-
-    float traveledDistance = 0f;
-
-    float playScore = 0f;
-
 
     public GameStatePlay(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
-        playerAnimator = gc.playerAnimator;
-        player = gc.player;
-
-        rigidbody = gc.player.GetComponent<Rigidbody2D>();
-        rigidbody.simulated = true;
+        playerRigidbody = player.GetComponent<Rigidbody2D>();
+        playerRigidbody.simulated = true;
 
         player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D += OnPlayerCollisionEnter;
         player.GetComponent<Collider2DEventsHandler>().onTriggerExit2D += OnPlayerCollisionExit;
-
-        playerAnimator.ResetTrigger("GameHasStarted");
 
         inputSystem.AddInputHandler("Fire1",
             OnFirePressed,
@@ -120,7 +95,9 @@ public class GameStatePlay : GameState {
 
         gc.platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
 
-        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.jumpForceScale);
+        playerRigidbody.AddForce(-Physics2D.gravity * playerRigidbody.gravityScale * playerParams.jumpForceScale);
+
+        player.GetComponent<Animator>().ResetTrigger("GameHasStarted");
 
         FixedUpdateFunc = () => { };
     }
@@ -137,8 +114,7 @@ public class GameStatePlay : GameState {
         var leftPipeGroup = gameController.pipes.Peek();
         var leftPipeBounds = leftPipeGroup.GetComponentInChildren<Collider2D>().bounds;
 
-        var cam = Camera.main;
-        var planes = GeometryUtility.CalculateFrustumPlanes(cam);
+        var planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
 
         bool visible = GeometryUtility.TestPlanesAABB(planes, leftPipeBounds);
 
@@ -170,7 +146,7 @@ public class GameStatePlay : GameState {
         FixedUpdateFunc();
 
         float angularVelocity = Mathf.Clamp(
-            rigidbody.velocity.y * playerParams.angularVelocityScaler,
+            playerRigidbody.velocity.y * playerParams.angularVelocityScaler,
             playerParams.minAngularVelocity, playerParams.maxAngularVelocity
         );
 
@@ -186,14 +162,14 @@ public class GameStatePlay : GameState {
 
     void OnFirePressed()
     {
-        playerAnimator.SetTrigger("WingsHaveFlapped");
+        player.GetComponent<Animator>().SetTrigger("WingsHaveFlapped");
 
-        rigidbody.velocity = Vector2.zero;
+        playerRigidbody.velocity = Vector2.zero;
         player.transform.Rotate(Vector2.zero);
 
         jumpStartTime = Time.time;
 
-        rigidbody.velocity = Vector2.zero;
+        playerRigidbody.velocity = Vector2.zero;
 
         FixedUpdateFunc = () => { };
     }
@@ -203,15 +179,15 @@ public class GameStatePlay : GameState {
         FixedUpdateFunc = () =>
         {
             if (Time.time - jumpStartTime < .072f)
-                rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.jumpForceScale);
+                playerRigidbody.AddForce(-Physics2D.gravity * playerRigidbody.gravityScale * playerParams.jumpForceScale);
         };
     }
 
     void OnFireUnpressed()
     {
-        playerAnimator.ResetTrigger("WingsHaveFlapped");
+        player.GetComponent<Animator>().ResetTrigger("WingsHaveFlapped");
 
-        rigidbody.AddForce(Physics2D.gravity * rigidbody.gravityScale);
+        playerRigidbody.AddForce(Physics2D.gravity * playerRigidbody.gravityScale);
 
         FixedUpdateFunc = () => { };
     }
@@ -221,8 +197,8 @@ public class GameStatePlay : GameState {
         player.GetComponent<Collider2DEventsHandler>().onCollisionEnter2D -= OnPlayerCollisionEnter;
         player.GetComponent<Collider2DEventsHandler>().onTriggerExit2D -= OnPlayerCollisionExit;
 
-        rigidbody.velocity = Vector2.zero;
-        rigidbody.AddForce(-Physics2D.gravity * rigidbody.gravityScale * playerParams.deadJumpForceScale);
+        playerRigidbody.velocity = Vector2.zero;
+        playerRigidbody.AddForce(-Physics2D.gravity * playerRigidbody.gravityScale * playerParams.deadJumpForceScale);
 
         OnFinishAction();
     }
@@ -237,8 +213,7 @@ public class GameStatePlay : GameState {
 }
 
 public class GameStateFail : GameState {
-    GameObject player;
-    Rigidbody2D rigidbody;
+    Rigidbody2D playerRigidbody;
     UVScroller uvScroller;
 
     float rollAngle;
@@ -247,18 +222,13 @@ public class GameStateFail : GameState {
 
     public GameStateFail(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
-        //canvasAnimator = gc.idleStateCanvasAnimator;
-
-        gc.playerAnimator.enabled = false;
-
-        player = gc.player;
-
+        player.GetComponent<Animator>().enabled = false;
         player.GetComponent<Collider2D>().isTrigger = true;
 
         rollAngle = 0f;
 
-        rigidbody = player.GetComponent<Rigidbody2D>();
-        rigidbody.velocity = Vector2.zero;
+        playerRigidbody = player.GetComponent<Rigidbody2D>();
+        playerRigidbody.velocity = Vector2.zero;
 
         player.transform.Rotate(Vector2.zero);
 
@@ -293,7 +263,7 @@ public class GameStateFail : GameState {
     public override void FixedUpdate()
     {
         float angularVelocity = Mathf.Clamp(
-            rigidbody.velocity.y * playerParams.angularVelocityScaler,
+            playerRigidbody.velocity.y * playerParams.angularVelocityScaler,
             playerParams.minAngularVelocity * 2.4f, playerParams.maxAngularVelocity
         );
 

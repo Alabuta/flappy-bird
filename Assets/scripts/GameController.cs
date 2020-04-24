@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -18,15 +17,12 @@ public class GameController : MonoBehaviour {
     public GameObject playStateCanvas;
     public GameObject failStateCanvas;
 
-    public Animator playerAnimator { get; private set; }
-    public Animator idleStateCanvasAnimator { get; private set; }
-
-    public PlayerParams playerParams;// { get; private set; }
+    public PlayerParams playerParams;
     public PipesParams pipesParams;
 
     public Queue<GameObject> pipes;
 
-    private GameState gameState = null;
+    private GameState gameState;
 
     private InputSystem inputSystem;
 
@@ -35,9 +31,6 @@ public class GameController : MonoBehaviour {
         inputSystem = new InputSystem();
 
         player.AddComponent<Collider2DEventsHandler>();
-
-        playerAnimator = player.GetComponent<Animator>();
-        idleStateCanvasAnimator = idleStateCanvas.GetComponent<Animator>();
 
         failStateCanvas.SetActive(false);
 
@@ -80,10 +73,6 @@ public class GameController : MonoBehaviour {
 
     void Update()
     {
-        // TODO: remove
-        if (Input.GetKeyDown(KeyCode.R))
-            SceneManager.LoadScene("main", LoadSceneMode.Single);
-
         inputSystem.Update();
 
         gameState.Update();
