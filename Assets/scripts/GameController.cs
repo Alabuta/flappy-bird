@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 
@@ -67,6 +68,12 @@ public class GameController : MonoBehaviour {
 
             pipes.Enqueue(pipe);
         }
+
+        var restartButton = failStateCanvas.transform.Find("restart-button");
+        restartButton.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            SceneManager.LoadScene("main", LoadSceneMode.Single);
+        });
 
         UpdateGameState();
     }

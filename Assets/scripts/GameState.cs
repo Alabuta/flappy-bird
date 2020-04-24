@@ -284,7 +284,7 @@ public class GameStateFail : GameState {
 
         gameController.idleStateCanvas.transform.position += Vector3.left * movementVelocity * Time.deltaTime;
 
-        if (movementVelocity < 1e-2f) {
+        if (movementVelocity < 1e-3f) {
             gameController.playStateCanvas.SetActive(false);
             OnFinishAction();
         }
@@ -294,7 +294,7 @@ public class GameStateFail : GameState {
     {
         float angularVelocity = Mathf.Clamp(
             rigidbody.velocity.y * playerParams.angularVelocityScaler,
-            playerParams.minAngularVelocity * 2f, playerParams.maxAngularVelocity
+            playerParams.minAngularVelocity * 2.4f, playerParams.maxAngularVelocity
         );
 
         if (angularVelocity < 0f) {
