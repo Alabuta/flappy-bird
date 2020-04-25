@@ -8,24 +8,60 @@ public abstract class GameState {
 
     protected InputSystem inputSystem;
 
-    protected Action OnFinishAction;
-
     protected GameObject player;
+
+    protected readonly Action OnFinishAction;
 
     protected readonly PlayerParams playerParams;
 
-    public float movementVelocity { get; protected set; }
+    protected readonly float stateStartTime;
+
+    public float gameStartTime {
+        get {
+            return gameController.gameStartTime;
+        }
+    }
+
+    public float movementVelocity {
+        get {
+            return gameController.movementVelocity;
+        }
+
+        protected set {
+            gameController.movementVelocity = value;
+        }
+    }
+
+    public float playScore {
+        get {
+            return gameController.playScore;
+        }
+
+        protected set {
+            gameController.playScore = value;
+        }
+    }
+
+    public float bestScore {
+        get {
+            return gameController.bestScore;
+        }
+    }
 
     public GameState(GameController gc, Action onFinishAction)
     {
-        OnFinishAction = onFinishAction;
+        gameController = gc;
 
         inputSystem = new InputSystem();
 
-        gameController = gc;
+        OnFinishAction = onFinishAction;
+
         player = gc.player;
         playerParams = gc.playerParams;
+
         movementVelocity = playerParams.movementVelocity;
+
+        stateStartTime = Time.time;
     }
 
     public abstract void Update();
@@ -40,8 +76,6 @@ public class GameStateIdle : GameState {
 
         var rigidbody = player.GetComponent<Rigidbody2D>();
         rigidbody.simulated = false;
-
-        gc.platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
 
         inputSystem.AddInputHandler("Fire1",
             () => {
@@ -68,16 +102,12 @@ public class GameStateIdle : GameState {
 }
 
 public class GameStatePlay : GameState {
-    Rigidbody2D playerRigidbody;
+    readonly Rigidbody2D playerRigidbody;
 
-    float rollAngle = 0f;
     float jumpStartTime = 0f;
-    float traveledDistance = 0f;
-    float playScore = 0f;
 
     delegate void FixedUpdateDelegate();
     FixedUpdateDelegate FixedUpdateFunc;
-
 
     public GameStatePlay(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
@@ -93,8 +123,6 @@ public class GameStatePlay : GameState {
             OnFireUnpressed
         );
 
-        gc.platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
-
         playerRigidbody.AddForce(-Physics2D.gravity * playerRigidbody.gravityScale * playerParams.jumpForceScale);
 
         player.GetComponent<Animator>().ResetTrigger("GameHasStarted");
@@ -106,58 +134,14 @@ public class GameStatePlay : GameState {
     {
         inputSystem.Update();
 
-        foreach (var pipe in gameController.pipes) {
-            var tr = pipe.GetComponent<Transform>();
-            tr.position += Vector3.left * movementVelocity * Time.deltaTime;
-        }
-
-        var leftPipeGroup = gameController.pipes.Peek();
-        var leftPipeBounds = leftPipeGroup.GetComponentInChildren<Collider2D>().bounds;
-
-        var planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
-
-        bool visible = GeometryUtility.TestPlanesAABB(planes, leftPipeBounds);
-
-        if (!visible && leftPipeGroup.transform.position.x < 0f) {
-            leftPipeGroup = gameController.pipes.Dequeue();
-
-            var pipesParams = gameController.pipesParams;
-
-            var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
-
-            foreach (var transform in leftPipeGroup.GetComponentsInChildren<Transform>())
-                transform.localPosition = new Vector3(0f, gap * Mathf.Sign(transform.localPosition.y), transform.localPosition.z);
-
-            var tr = leftPipeGroup.GetComponent<Transform>();
-            tr.position += Vector3.right * pipesParams.offset * (gameController.pipesParams.number - 1f);
-            tr.position += Vector3.Scale(pipesParams.randomOffset, UnityEngine.Random.insideUnitSphere);
-
-            gameController.pipes.Enqueue(leftPipeGroup);
-        }
-
-        traveledDistance += (Vector3.left * movementVelocity * Time.deltaTime).magnitude;
-
-        if (traveledDistance > 4f)
-            gameController.idleStateCanvas.transform.position += Vector3.left * movementVelocity * Time.deltaTime;
+        gameController.UpdatePipes();
     }
 
     public override void FixedUpdate()
     {
         FixedUpdateFunc();
 
-        float angularVelocity = Mathf.Clamp(
-            playerRigidbody.velocity.y * playerParams.angularVelocityScaler,
-            playerParams.minAngularVelocity, playerParams.maxAngularVelocity
-        );
-
-        if (angularVelocity < 0f) {
-            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), playerParams.negativeAngularVelocityScaler);
-        }
-
-        rollAngle += angularVelocity;
-        rollAngle = Mathf.Clamp(rollAngle, playerParams.minRollAngle, playerParams.maxRollAngle);
-
-        player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
+        gameController.UpdatePlayer();
     }
 
     void OnFirePressed()
@@ -165,7 +149,7 @@ public class GameStatePlay : GameState {
         player.GetComponent<Animator>().SetTrigger("WingsHaveFlapped");
 
         playerRigidbody.velocity = Vector2.zero;
-        player.transform.Rotate(Vector2.zero);
+        //player.transform.rotation = Quaternion.identity;
 
         jumpStartTime = Time.time;
 
@@ -214,29 +198,16 @@ public class GameStatePlay : GameState {
 
 public class GameStateFail : GameState {
     Rigidbody2D playerRigidbody;
-    UVScroller uvScroller;
-
-    float rollAngle;
-    float startTime;
-    float originalMovementVelocity;
 
     public GameStateFail(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
         player.GetComponent<Animator>().enabled = false;
         player.GetComponent<Collider2D>().isTrigger = true;
 
-        rollAngle = 0f;
-
         playerRigidbody = player.GetComponent<Rigidbody2D>();
         playerRigidbody.velocity = Vector2.zero;
 
-        player.transform.Rotate(Vector2.zero);
-
-        startTime = Time.time;
-
-        uvScroller = gc.platform.GetComponent<UVScroller>();
-
-        originalMovementVelocity = movementVelocity;
+        player.transform.rotation = Quaternion.identity;
 
         gc.playStateCanvas.GetComponent<Animator>().SetTrigger("GameFailed");
 
@@ -244,15 +215,9 @@ public class GameStateFail : GameState {
 
     public override void Update()
     {
-        movementVelocity = Mathf.Lerp(originalMovementVelocity, 0, Time.time - startTime);
-        uvScroller.velocity = new Vector2(movementVelocity, 0f);
+        movementVelocity = Mathf.Lerp(playerParams.movementVelocity, 0, Time.time - stateStartTime);
 
-        foreach (var pipe in gameController.pipes) {
-            var tr = pipe.GetComponent<Transform>();
-            tr.position += Vector3.left * movementVelocity * Time.deltaTime;
-        }
-
-        gameController.idleStateCanvas.transform.position += Vector3.left * movementVelocity * Time.deltaTime;
+        gameController.UpdatePipes();
 
         if (movementVelocity < 1e-3f) {
             gameController.playStateCanvas.SetActive(false);
@@ -262,29 +227,28 @@ public class GameStateFail : GameState {
 
     public override void FixedUpdate()
     {
-        float angularVelocity = Mathf.Clamp(
-            playerRigidbody.velocity.y * playerParams.angularVelocityScaler,
-            playerParams.minAngularVelocity * 2.4f, playerParams.maxAngularVelocity
-        );
-
-        if (angularVelocity < 0f) {
-            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), playerParams.negativeAngularVelocityScaler);
-        }
-
-        rollAngle += angularVelocity;
-        rollAngle = Mathf.Clamp(rollAngle, playerParams.minRollAngle, playerParams.maxRollAngle);
-
-        player.transform.rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * rollAngle, Vector3.forward);
+        gameController.UpdatePlayer();
     }
 }
 
 public class GameStateResult : GameState {
     public GameStateResult(GameController gc, Action onFinishAction) : base(gc, onFinishAction)
     {
+        movementVelocity = 0f;
+
         gc.failStateCanvas.SetActive(true);
 
-        var scoreText = gc.failStateCanvas.transform.Find("score").transform.Find("score-text");
-        scoreText.GetComponent<Text>().text = (0123456789).ToString();
+        var score = gc.failStateCanvas.transform.Find("score");
+
+        {
+            var scoreText = score.transform.Find("score-text");
+            scoreText.GetComponent<Text>().text = playScore.ToString();
+        }
+
+        {
+            var scoreText = score.transform.Find("best-score-text");
+            scoreText.GetComponent<Text>().text = PlayerPrefs.GetFloat("BestScore", playScore).ToString();
+        }
     }
 
     public override void Update()

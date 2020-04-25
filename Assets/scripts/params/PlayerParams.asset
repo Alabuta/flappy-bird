@@ -15,9 +15,9 @@ MonoBehaviour:
   jumpForceScale: 7
   deadJumpForceScale: 27
   movementVelocity: 8
-  minRollAngle: -1.5707964
-  maxRollAngle: 0.3926991
-  angularVelocityScaler: 0.01
-  minAngularVelocity: -0.049087387
-  maxAngularVelocity: 0.7853982
-  negativeAngularVelocityScaler: 1.1
+  minRollAngle: -90
+  maxRollAngle: 22
+  angularVelocityScaler: 1
+  minAngularVelocity: -2.8
+  maxAngularVelocity: 45
+  negativeAngularVelocityScaler: 1.2
