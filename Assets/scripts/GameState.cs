@@ -119,7 +119,7 @@ public class GameStatePlay : GameState {
 
         inputSystem.AddInputHandler("Fire1",
             OnFirePressed,
-            OnFireHeld,
+            () => { },
             OnFireUnpressed
         );
 
@@ -134,14 +134,14 @@ public class GameStatePlay : GameState {
     {
         inputSystem.Update();
 
+        gameController.UpdatePlayer();
+
         gameController.UpdatePipes();
     }
 
     public override void FixedUpdate()
     {
         FixedUpdateFunc();
-
-        gameController.UpdatePlayer();
     }
 
     void OnFirePressed()
@@ -149,20 +149,15 @@ public class GameStatePlay : GameState {
         player.GetComponent<Animator>().SetTrigger("WingsHaveFlapped");
 
         playerRigidbody.velocity = Vector2.zero;
-        //player.transform.rotation = Quaternion.identity;
+        // player.transform.rotation = Quaternion.identity;
 
         jumpStartTime = Time.time;
 
         playerRigidbody.velocity = Vector2.zero;
 
-        FixedUpdateFunc = () => { };
-    }
-
-    void OnFireHeld()
-    {
         FixedUpdateFunc = () =>
         {
-            if (Time.time - jumpStartTime < .072f)
+            if (Time.time - jumpStartTime < .1f)
                 playerRigidbody.AddForce(-Physics2D.gravity * playerRigidbody.gravityScale * playerParams.jumpForceScale);
         };
     }

@@ -7,7 +7,7 @@ public sealed class PlayerParams : ScriptableObject {
     public float jumpForceScale = 7f;
     [Range(0, 30)]
     public float deadJumpForceScale = 27f;
-    [Range(0, 10)]
+    [Range(0, 20)]
     public float movementVelocity = 8f;
 
     [Header("Roll Animation Settings"), Range(-90f, 0f)]

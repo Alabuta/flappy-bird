@@ -36,8 +36,12 @@ public class GameController : MonoBehaviour {
     [HideInInspector]
     public float bestScore;
 
+    System.Random rg;
+
     void Start()
     {
+        rg = new System.Random(88);
+
         player.AddComponent<Collider2DEventsHandler>();
 
         failStateCanvas.SetActive(false);
@@ -46,9 +50,10 @@ public class GameController : MonoBehaviour {
 
         for (var i = 0; i < 5; ++i) {
             var position = pipesParams.startPoint + Vector3.right * pipesParams.offset * i;
-            var offset = Vector3.Scale(pipesParams.randomOffset, UnityEngine.Random.insideUnitSphere);
+            var offset = Vector3.Scale(pipesParams.randomOffset, GetRandomInsideUnitSphere());
 
-            var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
+            //var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
+            var gap = pipesParams.pipesVerticalGapMin;
 
             var pipe = Instantiate(prefabPipes, Vector3.zero, Quaternion.identity);
 
@@ -81,6 +86,9 @@ public class GameController : MonoBehaviour {
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Application.Quit();
+
         gameState.Update();
 
         platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
@@ -139,14 +147,15 @@ public class GameController : MonoBehaviour {
         if (!visible && leftPipeGroup.transform.position.x < 0f) {
             leftPipeGroup = pipes.Dequeue();
 
-            var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
+            //var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
+            var gap = pipesParams.pipesVerticalGapMin;
 
             foreach (var transform in leftPipeGroup.GetComponentsInChildren<Transform>())
                 transform.localPosition = new Vector3(0f, gap * Mathf.Sign(transform.localPosition.y), transform.localPosition.z);
 
             var tr = leftPipeGroup.GetComponent<Transform>();
             tr.position += Vector3.right * pipesParams.offset * (pipesParams.number - 1f);
-            tr.position += Vector3.Scale(pipesParams.randomOffset, UnityEngine.Random.insideUnitSphere);
+            tr.position += Vector3.Scale(pipesParams.randomOffset, GetRandomInsideUnitSphere());
 
             pipes.Enqueue(leftPipeGroup);
         }
@@ -168,9 +177,14 @@ public class GameController : MonoBehaviour {
         player.transform.rotation.ToAngleAxis(out float rollAngle, out Vector3 axis);
 
         rollAngle *= Mathf.Sign(axis.z);
-        rollAngle += angularVelocity;
+        rollAngle += angularVelocity * Time.deltaTime * 60f;
         rollAngle = Mathf.Clamp(rollAngle, playerParams.minRollAngle, playerParams.maxRollAngle);
 
         player.transform.rotation = Quaternion.AngleAxis(rollAngle, Vector3.forward);
+    }
+
+    Vector3 GetRandomInsideUnitSphere()
+    {
+        return new Vector3((float)rg.NextDouble(), (float)rg.NextDouble(), (float)rg.NextDouble());
     }
 }
