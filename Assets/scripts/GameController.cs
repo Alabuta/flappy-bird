@@ -24,12 +24,20 @@ public class GameController : MonoBehaviour {
 
     private GameState gameState;
 
-    private InputSystem inputSystem;
+    [HideInInspector]
+    public float movementVelocity;
+
+    [HideInInspector]
+    public float gameStartTime;
+
+    [HideInInspector]
+    public float playScore;
+
+    [HideInInspector]
+    public float bestScore;
 
     void Start()
     {
-        inputSystem = new InputSystem();
-
         player.AddComponent<Collider2DEventsHandler>();
 
         failStateCanvas.SetActive(false);
@@ -68,14 +76,17 @@ public class GameController : MonoBehaviour {
             SceneManager.LoadScene("main", LoadSceneMode.Single);
         });
 
-        UpdateGameState();
+        InitGameStates();
     }
 
     void Update()
     {
-        inputSystem.Update();
-
         gameState.Update();
+
+        platform.GetComponent<UVScroller>().velocity = new Vector2(movementVelocity, 0f);
+
+        if (gameStartTime > 0f && (Time.time - gameStartTime) > .64f)
+            idleStateCanvas.transform.position += Vector3.left * movementVelocity * Time.deltaTime;
     }
 
     void FixedUpdate()
@@ -83,10 +94,15 @@ public class GameController : MonoBehaviour {
         gameState.FixedUpdate();
     }
 
-    void UpdateGameState()
+    void InitGameStates()
     {
         Action onFinishGameStateFail = () =>
         {
+            movementVelocity = 0f;
+
+            bestScore = Math.Max(playScore, PlayerPrefs.GetFloat("BestScore", 0f));
+            PlayerPrefs.SetFloat("BestScore", bestScore);
+
             gameState = new GameStateResult(this, () => { });
         };
 
@@ -97,11 +113,64 @@ public class GameController : MonoBehaviour {
 
         Action onFinishGameStateIdle = () =>
         {
+            gameStartTime = Time.time;
+
             gameState = new GameStatePlay(this, onFinishGameStatePlay);
         };
 
         if (gameState is null) {
             gameState = new GameStateIdle(this, onFinishGameStateIdle);
         }
+    }
+    public void UpdatePipes()
+    {
+        foreach (var pipe in pipes) {
+            var tr = pipe.GetComponent<Transform>();
+            tr.position += Vector3.left * movementVelocity * Time.deltaTime;
+        }
+
+        var leftPipeGroup = pipes.Peek();
+        var leftPipeBounds = leftPipeGroup.GetComponentInChildren<Collider2D>().bounds;
+
+        var planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+
+        bool visible = GeometryUtility.TestPlanesAABB(planes, leftPipeBounds);
+
+        if (!visible && leftPipeGroup.transform.position.x < 0f) {
+            leftPipeGroup = pipes.Dequeue();
+
+            var gap = Mathf.Max(pipesParams.pipesVerticalGapMin, UnityEngine.Random.value * pipesParams.pipesVerticalGapMax);
+
+            foreach (var transform in leftPipeGroup.GetComponentsInChildren<Transform>())
+                transform.localPosition = new Vector3(0f, gap * Mathf.Sign(transform.localPosition.y), transform.localPosition.z);
+
+            var tr = leftPipeGroup.GetComponent<Transform>();
+            tr.position += Vector3.right * pipesParams.offset * (pipesParams.number - 1f);
+            tr.position += Vector3.Scale(pipesParams.randomOffset, UnityEngine.Random.insideUnitSphere);
+
+            pipes.Enqueue(leftPipeGroup);
+        }
+    }
+
+    public void UpdatePlayer()
+    {
+        var playerRigidbody = player.GetComponent<Rigidbody2D>();
+
+        float angularVelocity = Mathf.Clamp(
+            playerRigidbody.velocity.y * playerParams.angularVelocityScaler,
+            playerParams.minAngularVelocity, playerParams.maxAngularVelocity
+        );
+
+        if (angularVelocity < 0f) {
+            angularVelocity = -Mathf.Pow(Mathf.Abs(angularVelocity), playerParams.negativeAngularVelocityScaler);
+        }
+
+        player.transform.rotation.ToAngleAxis(out float rollAngle, out Vector3 axis);
+
+        rollAngle *= Mathf.Sign(axis.z);
+        rollAngle += angularVelocity;
+        rollAngle = Mathf.Clamp(rollAngle, playerParams.minRollAngle, playerParams.maxRollAngle);
+
+        player.transform.rotation = Quaternion.AngleAxis(rollAngle, Vector3.forward);
     }
 }
